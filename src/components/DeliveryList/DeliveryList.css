@@ -1,0 +1,108 @@
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --border: 214.3 31.8% 91.4%;
+  --primary: 222.2 47.4% 11.2%;
+  --border-radius: 0.5rem;
+}
+
+.list-column {
+  flex: 0 0 400px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  overflow: hidden;
+}
+
+.search-container {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.search-container input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid hsl(var(--border));
+  outline: none;
+}
+
+.deliveries-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  background: hsl(var(--background));
+}
+
+.delivery-card {
+  width: 92%; /* <-- largeur ajustée comme dans la maquette */
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.delivery-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  flex-shrink: 0;
+}
+
+.pagination button {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background));
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Responsive (mobile/tablette) */
+@media (max-width: 768px) {
+  .list-column {
+    flex: none;
+    width: 100%;
+    height: 50vh;
+    border-right: none;
+    border-top: 1px solid hsl(var(--border));
+  }
+
+  .deliveries-list-container {
+    padding: 0.5rem;
+  }
+
+  .delivery-card {
+    width: 95%; /* plus souple sur mobile */
+  }
+
+  .pagination {
+    justify-content: center;
+    gap: 1rem;
+  }
+}
