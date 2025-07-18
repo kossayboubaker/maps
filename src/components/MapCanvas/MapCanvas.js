@@ -25,6 +25,7 @@ const MapWithTrucks = () => {
     };
 
     window.addEventListener('resize', handleResize);
+    handleResize(); // Appliquer au chargement initial
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -38,7 +39,7 @@ const MapWithTrucks = () => {
     });
   };
 
-  // Trajectoires réalistes avec points de passage
+  // Trajectoires réalistes
   const realTrajectories = {
     'TN-001': [
       { lat: 36.8065, lng: 10.1815, name: 'Tunis Centre' },
@@ -96,7 +97,7 @@ const MapWithTrucks = () => {
     }
   };
 
-  // Données simulées avec routes réalistes
+  // Données simulées
   const generateSampleTrucks = async () => {
     const sampleTrucks = [
       {
@@ -371,8 +372,10 @@ const MapWithTrucks = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Rendu du panneau de contrôle avec boutons de zoom intégrés
+  // Rendu du panneau de contrôle
   const renderControlPanel = () => {
+    const isMobile = windowSize.width < 768;
+
     if (!isControlPanelOpen) {
       return (
         <button
@@ -380,24 +383,23 @@ const MapWithTrucks = () => {
           style={{
             position: 'absolute',
             top: '20px',
-            right: '20px',
+            right: '10px',
             zIndex: 1000,
-            background: 'white',
-            border: 'none',
-            borderRadius: '60%',
-            width: '40px',
-            height: '40px',
+            background: 'rgba(255, 255, 255, 0.95)',
+            padding: '12px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            width: '35px',
+            height: '35px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            cursor: 'pointer',
-            transition: 'background 0.02s ease',
+            transition: 'all 0.3s ease',
           }}
         >
           <svg
-            width="20"
-            height="20"
+            width="30"
+            height="30"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -416,14 +418,16 @@ const MapWithTrucks = () => {
         style={{
           position: 'absolute',
           top: '20px',
-          right: '20px',
+          right: '10px',
           zIndex: 1000,
           background: 'rgba(255, 255, 255, 0.95)',
           padding: '16px',
           borderRadius: '12px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          minWidth: windowSize.width < 400 ? '240px' : '280px',
-          maxWidth: windowSize.width < 600 ? '280px' : '320px',
+          width: isMobile ? '90%' : '280px',
+          maxWidth: '300px',
+          maxHeight: '90vh',
+          overflowY: 'auto',
           transition: 'all 0.3s ease',
         }}
       >
@@ -448,7 +452,6 @@ const MapWithTrucks = () => {
           </button>
         </div>
 
-        {/* Boutons de zoom intégrés dans le panneau */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', gap: '8px' }}>
           <button
             onClick={() => map && map.zoomIn()}
@@ -464,7 +467,6 @@ const MapWithTrucks = () => {
               cursor: 'pointer',
               boxShadow: '0 2px 3px rgba(0,0,0,0.1)',
               transition: 'all 0.2s ease',
-              ':hover': { background: '#F3F4F6' },
             }}
           >
             <svg
@@ -495,7 +497,6 @@ const MapWithTrucks = () => {
               cursor: 'pointer',
               boxShadow: '0 2px 3px rgba(0,0,0,0.1)',
               transition: 'all 0.2s ease',
-              ':hover': { background: '#F3F4F6' },
             }}
           >
             <svg
@@ -665,7 +666,7 @@ const MapWithTrucks = () => {
         id="map-container"
         style={{
           height: '100%',
-          width: '200%',
+          width: '100%',
           minHeight: windowSize.width < 100 ? '300px' : '500px',
           transition: 'all 0.1s ease',
         }}
