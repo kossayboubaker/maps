@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -135,7 +135,7 @@ const MapCanvas = ({
   };
 
   // Générer trajectoires réelles pour chaque camion avec routes vraies
-  const generateRealRoutes = () => {
+  const generateRealRoutes = useCallback(() => {
     const routesMap = {};
 
     trucksData.forEach(truck => {
@@ -201,9 +201,9 @@ const MapCanvas = ({
     });
 
     return routesMap;
-  };
+  }, [trucksData]);
 
-  const createTruckIcon = (truck) => {
+  const createTruckIcon = useCallback((truck) => {
     const isSelected = selectedDelivery && selectedDelivery.truck_id === truck.truck_id;
     const speed = truck.speed || 0;
     const state = truck.state || 'Unknown';
@@ -312,7 +312,7 @@ const MapCanvas = ({
       iconSize: adjustedSize,
       iconAnchor: [adjustedSize[0] / 2, adjustedSize[1] / 2],
     });
-  };
+  }, [selectedDelivery, alerts, map]);
 
   const createAlertIcon = (alert) => {
     const alertStyles = {
@@ -417,9 +417,9 @@ const MapCanvas = ({
     });
   };
 
-  const handleMapStyleChange = (style) => {
+  const handleMapStyleChange = useCallback((style) => {
     if (!map) return;
-    
+
     map.eachLayer((layer) => {
       if (layer instanceof L.TileLayer && layer !== weatherLayer) {
         map.removeLayer(layer);
@@ -439,7 +439,7 @@ const MapCanvas = ({
     };
 
     tileLayers[style].addTo(map);
-  };
+  }, [map, weatherLayer]);
 
   // Suivi des mouvements de souris pour les tooltips
   useEffect(() => {
