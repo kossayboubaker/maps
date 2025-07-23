@@ -455,7 +455,7 @@ const MapCanvas = ({
       });
 
       marker.on('click', () => {
-        onSelectTruck(truck);
+        onSelectDelivery(truck);
         if (followTruck) {
           map.flyTo(truck.position, Math.max(map.getZoom(), 12), { animate: true, duration: 1 });
         }
