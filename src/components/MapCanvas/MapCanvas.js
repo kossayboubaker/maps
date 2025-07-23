@@ -426,61 +426,95 @@ const MapCanvas = ({
 
   // Initialisation de la carte
   useEffect(() => {
-    configureLeafletIcons();
-
-    const leafletMap = L.map('map-container', {
-      center: [36.8065, 10.1815],
-      zoom: 7,
-      scrollWheelZoom: true,
-      zoomControl: false,
-    });
-
-    const tileLayers = {
-      standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-      }),
-      satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles © Esri',
-      }),
-      terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenTopoMap',
-      }),
-    };
-
-    tileLayers.standard.addTo(leafletMap);
-    setMap(leafletMap);
-
-    if (onMapReady) {
-      onMapReady(leafletMap);
+    // Vérifier que l'élément DOM existe avant d'initialiser Leaflet
+    const mapContainer = document.getElementById('map-container');
+    if (!mapContainer) {
+      console.warn('Élément map-container non trouvé');
+      return;
     }
 
-    // Générer les routes réelles après initialisation
-    setTimeout(() => {
-      try {
-        const routes = generateRealRoutes();
-        setTrucksData(prev => prev.map(truck => {
-          const fallbackRoute = [
-            truck.position,
-            truck.destinationCoords || truck.destination?.coordinates || truck.position
-          ];
+    configureLeafletIcons();
 
-          return {
-            ...truck,
-            realRoute: routes[truck.truck_id] || fallbackRoute
-          };
-        }));
+    // Attendre un tick pour s'assurer que le DOM est complètement prêt
+    const initializeMap = () => {
+      try {
+        const leafletMap = L.map('map-container', {
+          center: [36.8065, 10.1815],
+          zoom: 7,
+          scrollWheelZoom: true,
+          zoomControl: false,
+        });
+
+        const tileLayers = {
+          standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+          }),
+          satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri',
+          }),
+          terrain: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenTopoMap',
+          }),
+        };
+
+        // Attendre que la carte soit prête avant d'ajouter les layers
+        leafletMap.whenReady(() => {
+          tileLayers.standard.addTo(leafletMap);
+          setMap(leafletMap);
+
+          if (onMapReady) {
+            onMapReady(leafletMap);
+          }
+        });
+
+        // Générer les routes réelles après initialisation
+        setTimeout(() => {
+          try {
+            const routes = generateRealRoutes();
+            setTrucksData(prev => prev.map(truck => {
+              const fallbackRoute = [
+                truck.position,
+                truck.destinationCoords || truck.destination?.coordinates || truck.position
+              ];
+
+              return {
+                ...truck,
+                realRoute: routes[truck.truck_id] || fallbackRoute
+              };
+            }));
+          } catch (error) {
+            console.warn('Erreur lors de l\'initialisation des routes:', error);
+            // Utiliser des routes simples en cas d'échec total
+            setTrucksData(prev => prev.map(truck => ({
+              ...truck,
+              realRoute: [truck.position, truck.destinationCoords || truck.position]
+            })));
+          }
+        }, 500); // Délai augmenté pour sécurité
+
+        return () => {
+          try {
+            if (leafletMap) {
+              leafletMap.remove();
+            }
+          } catch (error) {
+            console.warn('Erreur suppression carte:', error);
+          }
+        };
       } catch (error) {
-        console.warn('Erreur lors de l\'initialisation des routes:', error);
-        // Utiliser des routes simples en cas d'échec total
-        setTrucksData(prev => prev.map(truck => ({
-          ...truck,
-          realRoute: [truck.position, truck.destinationCoords || truck.position]
-        })));
+        console.error('Erreur initialisation Leaflet:', error);
       }
-    }, 300); // Délai réduit
+    };
+
+    // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
+    requestAnimationFrame(initializeMap);
 
     return () => {
-      leafletMap.remove();
+      // Cleanup en cas d'erreur d'initialisation
+      const container = document.getElementById('map-container');
+      if (container) {
+        container.innerHTML = '';
+      }
     };
   }, [generateRealRoutes, onMapReady]);
 
@@ -1038,7 +1072,7 @@ const MapCanvas = ({
                   borderLeft: '4px solid #ef4444'
                 }}>
                   <div style={{ fontSize: '12px', fontWeight: '600', color: '#dc2626', marginBottom: '4px' }}>
-                    ⚠️ {hoveredItem.alerts.length} alerte{hoveredItem.alerts.length > 1 ? 's' : ''} active{hoveredItem.alerts.length > 1 ? 's' : ''}
+                    ���️ {hoveredItem.alerts.length} alerte{hoveredItem.alerts.length > 1 ? 's' : ''} active{hoveredItem.alerts.length > 1 ? 's' : ''}
                   </div>
                   {hoveredItem.alerts.slice(0, 2).map((alert, index) => (
                     <div key={index} style={{ fontSize: '11px', color: '#7f1d1d', marginBottom: '2px' }}>
