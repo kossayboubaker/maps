@@ -38,15 +38,6 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
   const progress = getProgressPercentage(delivery.status);
   const fuelConsumption = "4L/100km";
 
-  // Calculer les alertes liées à ce camion
-  const truckAlerts = alerts.filter(alert =>
-    alert.affectedRoutes && alert.affectedRoutes.includes(delivery.truck_id)
-  );
-  const alertsCount = truckAlerts.length;
-
-  // Calculer délai total des alertes
-  const totalDelay = truckAlerts.reduce((sum, alert) => sum + (alert.delay || 0), 0);
-
   const getResponsiveConfig = () => {
     const { width } = screenSize;
     if (width < 200) return { padding: '2px', gap: '2px', textSize: '6px', iconSize: 8 };
