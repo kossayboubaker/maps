@@ -366,17 +366,39 @@ const AlertNotifications = ({
                     )}
                   </div>
                 </div>
-                {onCloseAlert && (
-                  <button 
-                    className="alert-close"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onCloseAlert(alert.id);
-                    }}
-                  >
-                    ×
-                  </button>
-                )}
+                <button
+                  className="alert-close"
+                  onClick={(e) => handleDeleteAlert(alert.id, e)}
+                  style={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid #ef4444',
+                    borderRadius: '50%',
+                    width: '24px',
+                    height: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    color: '#ef4444',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    transition: 'all 0.2s ease',
+                    zIndex: 10
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#ef4444';
+                    e.target.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'rgba(239, 68, 68, 0.1)';
+                    e.target.style.color = '#ef4444';
+                  }}
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
