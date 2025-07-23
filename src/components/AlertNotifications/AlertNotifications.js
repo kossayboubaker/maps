@@ -247,9 +247,9 @@ const AlertNotifications = ({
         className="alert-notification-button"
         style={{
           position: 'fixed',
-          top: '190px',
+          top: '200px',
           right: '20px',
-          zIndex: 1000,
+          zIndex: 2000,
           width: '56px',
           height: '56px',
           borderRadius: '50%',
