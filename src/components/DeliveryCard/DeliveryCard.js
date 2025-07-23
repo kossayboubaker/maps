@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const DeliveryCard = ({ delivery, isSelected = false, onSelect, alerts = [] }) => {
+const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
   const [screenSize, setScreenSize] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1024,
     height: typeof window !== 'undefined' ? window.innerHeight : 768,
