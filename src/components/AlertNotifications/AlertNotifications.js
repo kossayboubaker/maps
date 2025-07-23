@@ -98,18 +98,44 @@ const AlertNotifications = ({
     return icons[type] || '⚠️';
   };
 
-  // Récupérer alertes météo en temps réel
-  const fetchWeatherAlerts = async () => {
-    try {
-      const weatherData = await Promise.all([
-        fetchCityWeather('Tunis', 36.8065, 10.1815),
-        fetchCityWeather('Sfax', 34.7406, 10.7603),
-        fetchCityWeather('Sousse', 35.8256, 10.6369)
-      ]);
+  // Générer alertes météo simulées (évite les appels API problématiques)
+  const generateWeatherAlerts = () => {
+    const weatherConditions = [
+      {
+        city: 'Tunis',
+        coordinates: [36.8065, 10.1815],
+        condition: Math.random() > 0.7 ? 'Rain' : 'Clear',
+        description: Math.random() > 0.7 ? 'Pluie modérée en cours' : 'Temps dégagé'
+      },
+      {
+        city: 'Sfax',
+        coordinates: [34.7406, 10.7603],
+        condition: Math.random() > 0.8 ? 'Mist' : 'Clouds',
+        description: Math.random() > 0.8 ? 'Brouillard dense' : 'Nuageux'
+      },
+      {
+        city: 'Sousse',
+        coordinates: [35.8256, 10.6369],
+        condition: Math.random() > 0.9 ? 'Thunderstorm' : 'Clear',
+        description: Math.random() > 0.9 ? 'Orages en approche' : 'Beau temps'
+      }
+    ];
 
-      const alerts = weatherData
-        .filter(data => data && data.hasAlert)
-        .map((data, index) => ({
+    const alerts = weatherConditions
+      .filter(data => data.condition !== 'Clear')
+      .map((data, index) => {
+        let severity = 'info';
+        let delay = 5;
+
+        if (data.condition === 'Rain') {
+          severity = 'warning';
+          delay = 10;
+        } else if (data.condition === 'Thunderstorm' || data.condition === 'Mist') {
+          severity = 'danger';
+          delay = 20;
+        }
+
+        return {
           id: `weather_${index}_${Date.now()}`,
           type: 'weather',
           title: 'Conditions météo défavorables',
@@ -117,69 +143,20 @@ const AlertNotifications = ({
           location: data.city,
           position: data.coordinates,
           description: data.description,
-          severity: data.severity,
-          delay: data.delay,
+          severity,
+          delay,
           affectedRoutes: trucks
             .filter(truck => calculateDistance(truck.position, data.coordinates) < 50)
             .map(truck => truck.truck_id),
           timestamp: new Date().toISOString(),
           isActive: true
-        }));
+        };
+      });
 
-      return alerts;
-    } catch (error) {
-      console.warn('Erreur récupération alertes météo:', error);
-      return [];
-    }
+    return alerts;
   };
 
-  const fetchCityWeather = async (city, lat, lng) => {
-    try {
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=4437791bbdc183036e4e04dc15c92cb8&units=metric&lang=fr`
-      );
-      const data = await response.json();
-
-      // Déterminer si il y a une alerte basée sur les conditions
-      const condition = data.weather[0].main;
-      const windSpeed = data.wind?.speed || 0;
-      const visibility = data.visibility || 10000;
-
-      let hasAlert = false;
-      let severity = 'info';
-      let delay = 0;
-      let description = data.weather[0].description;
-
-      if (condition === 'Rain' || condition === 'Thunderstorm') {
-        hasAlert = true;
-        severity = 'warning';
-        delay = 10;
-        description = `Pluie en cours - ${description}`;
-      } else if (condition === 'Snow' || condition === 'Mist' || visibility < 5000) {
-        hasAlert = true;
-        severity = 'danger';
-        delay = 20;
-        description = `Visibilité réduite - ${description}`;
-      } else if (windSpeed > 10) {
-        hasAlert = true;
-        severity = 'warning';
-        delay = 5;
-        description = `Vents forts - ${description}`;
-      }
-
-      return hasAlert ? {
-        city,
-        coordinates: [lat, lng],
-        hasAlert,
-        severity,
-        delay,
-        description
-      } : null;
-
-    } catch (error) {
-      return null;
-    }
-  };
+  // Fonction supprimée - remplacée par generateWeatherAlerts
 
   const calculateDistance = (pos1, pos2) => {
     const R = 6371; // Rayon de la Terre en km
@@ -194,10 +171,10 @@ const AlertNotifications = ({
 
   // Mettre à jour les alertes périodiquement
   useEffect(() => {
-    const updateAlerts = async () => {
+    const updateAlerts = () => {
       const trafficAlerts = generateIntelligentAlerts();
-      const weatherAlertsData = await fetchWeatherAlerts();
-      
+      const weatherAlertsData = generateWeatherAlerts();
+
       setActiveAlerts([...trafficAlerts, ...weatherAlertsData]);
     };
 
