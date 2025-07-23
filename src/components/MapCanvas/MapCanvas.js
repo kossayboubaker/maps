@@ -491,10 +491,20 @@ const MapCanvas = ({
 
     tileLayers.standard.addTo(leafletMap);
     setMap(leafletMap);
-    
+
     if (onMapReady) {
       onMapReady(leafletMap);
     }
+
+    // Générer les routes réelles après initialisation
+    setTimeout(() => {
+      generateRealRoutes().then(routes => {
+        setTrucksData(prev => prev.map(truck => ({
+          ...truck,
+          realRoute: routes[truck.truck_id] || [truck.position, truck.destinationCoords || truck.position]
+        })));
+      });
+    }, 1000);
 
     return () => {
       leafletMap.remove();
