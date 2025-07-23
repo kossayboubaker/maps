@@ -737,7 +737,7 @@ const MapCanvas = ({
 
   // Couche météo améliorée avec icônes visibles
   useEffect(() => {
-    if (!map) return;
+    if (!map || !map.getContainer()) return;
 
     // Supprimer anciens marqueurs météo
     map.eachLayer((layer) => {
@@ -779,7 +779,7 @@ const MapCanvas = ({
             <div style="padding: 16px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
               <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #1f2937;">
                 ${weather.condition === 'Clear' ? '☀️' :
-                  weather.condition === 'Clouds' ? '☁️' :
+                  weather.condition === 'Clouds' ? '☁���' :
                   weather.condition === 'Rain' ? '🌧️' : '🌤️'} ${city.name}
               </h3>
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
