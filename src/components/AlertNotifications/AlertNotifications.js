@@ -431,6 +431,19 @@ const AlertNotifications = ({
           </div>
         </div>
       </div>
+
+      <style>
+        {`
+          @keyframes newAlertGlow {
+            0%, 100% {
+              box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+            }
+            50% {
+              box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.5);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
