@@ -299,6 +299,18 @@ const App = () => {
     setShowAlerts(!showAlerts);
   };
 
+  const handleToggleRoutes = (show) => {
+    setShowRoutes(show);
+  };
+
+  const handleToggleWeather = (show) => {
+    setShowWeather(show);
+  };
+
+  const handleToggleFollowTruck = (follow) => {
+    setFollowTruck(follow);
+  };
+
   // Simuler des mises à jour d'alertes en temps réel
   useEffect(() => {
     const interval = setInterval(() => {
