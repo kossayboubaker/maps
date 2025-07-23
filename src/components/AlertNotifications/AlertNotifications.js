@@ -10,11 +10,9 @@ const AlertNotifications = ({
   onToggle 
 }) => {
   const [activeAlerts, setActiveAlerts] = useState([]);
-  const [weatherAlerts, setWeatherAlerts] = useState([]);
 
   // Générer des alertes en temps réel intelligentes
   const generateIntelligentAlerts = () => {
-    const newAlerts = [];
     const currentTime = new Date();
 
     // Alertes basées sur les données de trafic simulées
@@ -185,16 +183,9 @@ const AlertNotifications = ({
     const interval = setInterval(updateAlerts, 30000);
 
     return () => clearInterval(interval);
-  }, [trucks]);
+  }, [trucks, generateIntelligentAlerts, generateWeatherAlerts]);
 
-  const getSeverityColor = (severity) => {
-    const colors = {
-      danger: '#ef4444',
-      warning: '#f59e0b',
-      info: '#3b82f6'
-    };
-    return colors[severity] || '#6b7280';
-  };
+
 
   const getTotalAlerts = () => {
     return [...alerts, ...activeAlerts].length;
