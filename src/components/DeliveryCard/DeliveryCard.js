@@ -164,7 +164,7 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect, alerts = [] }) =
                 gap: '2px',
               }}
             >
-              0h15 ⏱️ {delivery.speed}km/h
+              {totalDelay > 0 ? `+${totalDelay}min` : '0h15'} ⏱️ {delivery.speed}km/h
             </span>
             <span
               style={{
@@ -177,6 +177,34 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect, alerts = [] }) =
               {progress}%
             </span>
           </div>
+
+          {/* Affichage alertes si présentes */}
+          {alertsCount > 0 && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '2px',
+              padding: '2px 4px',
+              backgroundColor: '#fef2f2',
+              borderRadius: '4px',
+              border: '1px solid #fecaca'
+            }}>
+              <span style={{ fontSize: responsive.textSize, color: '#ef4444' }}>
+                ⚠️ {alertsCount} alerte{alertsCount > 1 ? 's' : ''}
+              </span>
+              {totalDelay > 0 && (
+                <span style={{
+                  fontSize: responsive.textSize,
+                  color: '#dc2626',
+                  fontWeight: '600',
+                  marginLeft: 'auto'
+                }}>
+                  +{totalDelay}min
+                </span>
+              )}
+            </div>
+          )}
           <div
             style={{
               height: '2px',
