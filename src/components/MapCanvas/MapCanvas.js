@@ -716,7 +716,7 @@ const MapCanvas = ({
 
     return () => clearTimeout(timer);
 
-  }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts, createTruckIcon, onSelectDelivery]);
+  }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts, createTruckIcon, onSelectDelivery, isMapReady]);
 
   // Créer marqueurs météo
   const createWeatherIcon = (weather) => {
