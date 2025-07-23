@@ -43,6 +43,19 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
     setCurrentPage(0);
   }, [searchTerm]);
 
+  // Statistiques de la flotte (ajout selon capture 2)
+  const fleetStats = useMemo(() => {
+    const total = deliveries.length;
+    const enRoute = deliveries.filter(d => d.state === 'En Route').length;
+    const atDestination = deliveries.filter(d => d.state === 'At Destination').length;
+    const totalAlerts = deliveries.reduce((sum, d) => sum + (d.alerts?.length || 0), 0);
+    const avgSpeed = deliveries.length > 0
+      ? Math.round(deliveries.reduce((sum, d) => sum + (d.speed || 0), 0) / deliveries.length)
+      : 0;
+
+    return { total, enRoute, atDestination, totalAlerts, avgSpeed };
+  }, [deliveries]);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="p-2 xxs:p-3 xs:p-4 sm:p-5 border-b border-border flex-shrink-0">
@@ -67,6 +80,69 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full h-8 xxs:h-10 xs:h-10 pl-8 xxs:pl-9 xs:pl-10 pr-3 xxs:pr-4 rounded-lg border border-input bg-background text-xs xxs:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-smooth"
           />
+        </div>
+
+        {/* Statistiques selon capture 2 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))',
+          gap: '8px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            background: '#10b981',
+            borderRadius: '12px',
+            padding: '12px 8px',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
+            <div style={{ fontSize: '11px', marginTop: '2px' }}>Camions</div>
+          </div>
+          <div style={{
+            background: '#3b82f6',
+            borderRadius: '12px',
+            padding: '12px 8px',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
+            <div style={{ fontSize: '11px', marginTop: '2px' }}>En route</div>
+          </div>
+          <div style={{
+            background: '#8b5cf6',
+            borderRadius: '12px',
+            padding: '12px 8px',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.atDestination}</div>
+            <div style={{ fontSize: '11px', marginTop: '2px' }}>Arrivés</div>
+          </div>
+          <div style={{
+            background: '#ef4444',
+            borderRadius: '12px',
+            padding: '12px 8px',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
+            <div style={{ fontSize: '11px', marginTop: '2px' }}>Alertes</div>
+          </div>
+        </div>
+
+        {/* Vitesse moyenne sur une ligne séparée */}
+        <div style={{
+          background: '#f59e0b',
+          borderRadius: '12px',
+          padding: '12px',
+          textAlign: 'center',
+          color: 'white',
+          width: '100px',
+          margin: '0 auto 16px'
+        }}>
+          <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
+          <div style={{ fontSize: '11px', marginTop: '2px' }}>km/h moy</div>
         </div>
       </div>
 
