@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AlertNotifications.css';
 
-const AlertNotifications = ({ 
-  alerts = [], 
-  trucks = [], 
-  onAlertClick, 
+const AlertNotifications = ({
+  alerts = [],
+  trucks = [],
+  onAlertClick,
   onCloseAlert,
   isOpen,
-  onToggle 
+  onToggle
 }) => {
   const [activeAlerts, setActiveAlerts] = useState([]);
+  const [newAlertIds, setNewAlertIds] = useState(new Set());
 
   // Générer des alertes en temps réel intelligentes
   const generateIntelligentAlerts = useCallback(() => {
@@ -77,7 +78,7 @@ const AlertNotifications = ({
       accident: 'Accident de circulation',
       construction: 'Travaux en cours',
       traffic: 'Embouteillage',
-      police: 'Contrôle police',
+      police: 'Contr��le police',
       weather: 'Alerte météo',
       maintenance: 'Maintenance route'
     };
