@@ -547,47 +547,77 @@ const MapCanvas = ({
         }
       });
 
-      // Affichage des routes
-      if (showRoutes && realTrajectories[truck.truck_id]) {
-        const trajectory = realTrajectories[truck.truck_id];
-        const routeCoords = trajectory.map(point => [point.lat, point.lng]);
-        
+      // Affichage des routes avec trajectoires réelles
+      if (showRoutes && truck.realRoute) {
         const routeColor = selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? '#3B82F6' :
                           truck.state === 'En Route' ? '#10B981' : '#8B5CF6';
 
-        L.polyline(routeCoords, {
+        // Créer une polyligne avec style amélioré
+        const routeLine = L.polyline(truck.realRoute, {
           color: routeColor,
-          weight: selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? 8 : 5,
+          weight: selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? 6 : 4,
           opacity: 0.8,
           lineCap: 'round',
           lineJoin: 'round',
-          dashArray: truck.state === 'En Route' ? null : '15, 10',
+          dashArray: truck.state === 'En Route' ? null : '12, 8',
         }).addTo(map);
 
-        // Points d'étape pour le camion sélectionné
+        // Ajouter un effet de gradient pour le camion sélectionné
         if (selectedDelivery && selectedDelivery.truck_id === truck.truck_id) {
-          trajectory.forEach((point, index) => {
-            const isStart = index === 0;
-            const isEnd = index === trajectory.length - 1;
-            const isCurrent = index === Math.floor((truck.route_progress / 100) * (trajectory.length - 1));
-
-            const waypoint = L.circleMarker([point.lat, point.lng], {
-              radius: isStart || isEnd || isCurrent ? 12 : 8,
-              color: isStart ? '#10B981' : isEnd ? '#EF4444' : isCurrent ? '#F59E0B' : '#6B7280',
-              fillColor: isStart ? '#10B981' : isEnd ? '#EF4444' : isCurrent ? '#F59E0B' : '#6B7280',
-              fillOpacity: 1,
-              weight: 4,
-              stroke: true,
-              strokeColor: '#fff',
+          // Route parcourue (vert)
+          const progressIndex = Math.floor((truck.route_progress / 100) * truck.realRoute.length);
+          if (progressIndex > 0) {
+            L.polyline(truck.realRoute.slice(0, progressIndex), {
+              color: '#10B981',
+              weight: 8,
+              opacity: 1,
+              lineCap: 'round',
+              lineJoin: 'round',
             }).addTo(map);
+          }
 
-            waypoint.bindPopup(`
-              <div style="text-align: center; padding: 8px;">
-                <strong>${point.name}</strong><br>
-                ${isStart ? '🟢 Départ' : isEnd ? '🔴 Arrivée' : isCurrent ? '🟡 Position actuelle' : '⚪ Étape'}
-              </div>
-            `);
-          });
+          // Route restante (bleu plus clair)
+          if (progressIndex < truck.realRoute.length) {
+            L.polyline(truck.realRoute.slice(progressIndex), {
+              color: '#60A5FA',
+              weight: 6,
+              opacity: 0.6,
+              lineCap: 'round',
+              lineJoin: 'round',
+              dashArray: '8, 4',
+            }).addTo(map);
+          }
+
+          // Marqueurs de départ et arrivée
+          L.circleMarker(truck.realRoute[0], {
+            radius: 8,
+            color: '#10B981',
+            fillColor: '#10B981',
+            fillOpacity: 1,
+            weight: 3,
+            stroke: true,
+            strokeColor: '#fff',
+          }).addTo(map).bindPopup(`
+            <div style="text-align: center; padding: 8px;">
+              <strong>🟢 Départ</strong><br>
+              ${truck.pickup?.address || 'Point de départ'}
+            </div>
+          `);
+
+          L.circleMarker(truck.realRoute[truck.realRoute.length - 1], {
+            radius: 8,
+            color: '#EF4444',
+            fillColor: '#EF4444',
+            fillOpacity: 1,
+            weight: 3,
+            stroke: true,
+            strokeColor: '#fff',
+          }).addTo(map).bindPopup(`
+            <div style="text-align: center; padding: 8px;">
+              <strong>🔴 Destination</strong><br>
+              ${truck.destination || truck.destination?.address || 'Point d\'arrivée'}
+            </div>
+          `);
         }
       }
     });
