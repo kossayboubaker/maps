@@ -535,7 +535,7 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter les alertes - toujours visibles si il y en a (exclure les supprimées)
+    // Ajouter les alertes - TOUJOURS visibles (exclure les supprimées)
     if (alerts && alerts.length > 0) {
       const filteredAlerts = alerts.filter(alert => !deletedAlerts?.includes(alert.id));
 
