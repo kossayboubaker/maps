@@ -249,7 +249,7 @@ const mockAlerts = [
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTruck, setSelectedTruck] = useState(mockTrucks[0]);
+  const [selectedDelivery, setSelectedDelivery] = useState(mockTrucks[0]);
   const [isAsideOpen, setIsAsideOpen] = useState(true);
   const [mapStyle, setMapStyle] = useState('standard');
   const [showAlerts, setShowAlerts] = useState(false);
@@ -272,8 +272,8 @@ const App = () => {
     setSearchTerm(term);
   };
 
-  const handleTruckSelect = (truck) => {
-    setSelectedTruck(truck);
+  const handleDeliverySelect = (delivery) => {
+    setSelectedDelivery(delivery);
   };
 
   const handleMapStyleChange = (style) => {
