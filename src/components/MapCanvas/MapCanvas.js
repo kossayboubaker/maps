@@ -198,8 +198,12 @@ const MapCanvas = ({
   const generateRealRoutes = async () => {
     const routesMap = {};
 
-    for (const truck of trucksData) {
+    // Traiter tous les camions en parallèle mais avec limite
+    const promises = trucksData.map(async (truck, index) => {
       try {
+        // Ajouter un délai échelonné pour éviter de surcharger l'API
+        await new Promise(resolve => setTimeout(resolve, index * 100));
+
         let startCoord, endCoord, waypoints = [];
 
         // Définir points de départ et arrivée selon truck_id
@@ -251,19 +255,32 @@ const MapCanvas = ({
         }
 
         const realRoute = await getRealRoute(startCoord, endCoord, waypoints);
-        routesMap[truck.truck_id] = realRoute;
-
-        // Petit délai pour éviter de surcharger l'API
-        await new Promise(resolve => setTimeout(resolve, 200));
+        return { truckId: truck.truck_id, route: realRoute };
 
       } catch (error) {
-        console.error(`Erreur pour ${truck.truck_id}:`, error);
+        console.warn(`Erreur route pour ${truck.truck_id}:`, error.message);
         // Fallback vers route simple
-        routesMap[truck.truck_id] = [truck.position, truck.destinationCoords || truck.position];
+        return {
+          truckId: truck.truck_id,
+          route: [truck.position, truck.destinationCoords || truck.position]
+        };
       }
-    }
+    });
 
-    return routesMap;
+    try {
+      const results = await Promise.allSettled(promises);
+
+      results.forEach(result => {
+        if (result.status === 'fulfilled' && result.value) {
+          routesMap[result.value.truckId] = result.value.route;
+        }
+      });
+
+      return routesMap;
+    } catch (error) {
+      console.error('Erreur lors de la génération des routes:', error);
+      return {};
+    }
   };
 
   const createTruckIcon = (truck) => {
