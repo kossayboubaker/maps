@@ -836,40 +836,40 @@ const MapCanvas = ({
           </div>
 
           {/* Camion sélectionné */}
-          {selectedTruck && (
+          {selectedDelivery && (
             <div style={{
               background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
               borderRadius: '16px',
               padding: '20px',
               border: '2px solid #bfdbfe'
             }}>
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between', 
-                marginBottom: '16px' 
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '16px'
               }}>
-                <h3 style={{ 
-                  margin: 0, 
-                  fontSize: '18px', 
-                  fontWeight: '800', 
-                  color: '#1e40af' 
+                <h3 style={{
+                  margin: 0,
+                  fontSize: '18px',
+                  fontWeight: '800',
+                  color: '#1e40af'
                 }}>
-                  🚛 {selectedTruck.truck_id}
+                  🚛 {selectedDelivery.truck_id}
                 </h3>
                 <span style={{
-                  background: selectedTruck.state === 'En Route' ? '#10b981' : '#8b5cf6',
+                  background: selectedDelivery.state === 'En Route' ? '#10b981' : '#8b5cf6',
                   color: 'white',
                   padding: '6px 12px',
                   borderRadius: '8px',
                   fontSize: '12px',
                   fontWeight: '700'
                 }}>
-                  {selectedTruck.state}
+                  {selectedDelivery.state}
                 </span>
               </div>
-              
-              <div style={{ 
+
+              <div style={{
                 display: 'grid',
                 gridTemplateColumns: '1fr 1fr',
                 gap: '16px',
@@ -878,29 +878,29 @@ const MapCanvas = ({
                 <div>
                   <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>Conducteur</div>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                    👤 {selectedTruck.driver.name}
+                    👤 {selectedDelivery.driver.name}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>Destination</div>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                    📍 {selectedTruck.destination}
+                    📍 {selectedDelivery.destination || selectedDelivery.destination?.address}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>Vitesse</div>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                    ⚡ {Math.round(selectedTruck.speed)} km/h
+                    ⚡ {Math.round(selectedDelivery.speed)} km/h
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '4px' }}>Progression</div>
                   <div style={{ fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
-                    📊 {selectedTruck.route_progress}%
+                    📊 {selectedDelivery.route_progress}%
                   </div>
                 </div>
               </div>
-              
+
               {/* Barre de progression */}
               <div style={{
                 background: 'rgba(59, 130, 246, 0.1)',
@@ -910,7 +910,7 @@ const MapCanvas = ({
                 marginBottom: '12px'
               }}>
                 <div style={{
-                  width: `${selectedTruck.route_progress}%`,
+                  width: `${selectedDelivery.route_progress}%`,
                   height: '100%',
                   background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)',
                   borderRadius: '8px',
@@ -919,7 +919,7 @@ const MapCanvas = ({
               </div>
 
               {/* Météo destination */}
-              {weatherData[selectedTruck.destination] && (
+              {weatherData[selectedDelivery.destination || selectedDelivery.destination?.address] && (
                 <div style={{
                   background: 'rgba(255,255,255,0.8)',
                   borderRadius: '12px',
@@ -929,16 +929,16 @@ const MapCanvas = ({
                   gap: '12px'
                 }}>
                   <span style={{ fontSize: '24px' }}>
-                    {weatherData[selectedTruck.destination].condition === 'Clear' ? '☀️' :
-                     weatherData[selectedTruck.destination].condition === 'Clouds' ? '☁️' :
-                     weatherData[selectedTruck.destination].condition === 'Rain' ? '🌧️' : '🌤️'}
+                    {weatherData[selectedDelivery.destination || selectedDelivery.destination?.address].condition === 'Clear' ? '☀️' :
+                     weatherData[selectedDelivery.destination || selectedDelivery.destination?.address].condition === 'Clouds' ? '☁️' :
+                     weatherData[selectedDelivery.destination || selectedDelivery.destination?.address].condition === 'Rain' ? '🌧️' : '🌤️'}
                   </span>
                   <div>
                     <div style={{ fontSize: '16px', fontWeight: '700', color: '#1f2937' }}>
-                      {weatherData[selectedTruck.destination].temp}°C
+                      {weatherData[selectedDelivery.destination || selectedDelivery.destination?.address].temp}°C
                     </div>
                     <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                      {weatherData[selectedTruck.destination].description}
+                      {weatherData[selectedDelivery.destination || selectedDelivery.destination?.address].description}
                     </div>
                   </div>
                 </div>
