@@ -539,9 +539,10 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter les alertes - TOUJOURS visibles (exclure les supprimées)
-    if (alerts && alerts.length > 0) {
-      const filteredAlerts = alerts.filter(alert => !deletedAlerts?.includes(alert.id));
+    // Ajouter TOUTES les alertes - statiques + générées (exclure les supprimées)
+    const alertsToShow = allAlerts.length > 0 ? allAlerts : alerts;
+    if (alertsToShow && alertsToShow.length > 0) {
+      const filteredAlerts = alertsToShow.filter(alert => !deletedAlerts?.includes(alert.id));
 
       filteredAlerts.forEach(alert => {
         if (!alert.position || alert.position.length < 2) return;
