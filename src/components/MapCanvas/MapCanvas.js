@@ -542,7 +542,7 @@ const MapCanvas = ({
       });
     }
 
-  }, [map, trucksData, selectedTruck, showRoutes, followTruck, alerts, showAlerts]);
+  }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts]);
 
   // Couche météo
   useEffect(() => {
@@ -563,7 +563,7 @@ const MapCanvas = ({
 
   // Animation des camions
   useEffect(() => {
-    setTrucksData(trucks);
+    setTrucksData(deliveries);
     
     const interval = setInterval(() => {
       setTrucksData((prev) =>
