@@ -640,7 +640,7 @@ const MapCanvas = ({
       });
 
       // Affichage des routes avec trajectoires réelles
-      if (showRoutes && truck.realRoute) {
+      if (showRoutes && truck.realRoute && truck.realRoute.length > 1) {
         const routeColor = selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? '#3B82F6' :
                           truck.state === 'En Route' ? '#10B981' : '#8B5CF6';
 
