@@ -486,10 +486,10 @@ const MapCanvas = ({
       onMapReady(leafletMap);
     }
 
-    // Générer les routes réelles après initialisation avec gestion d'erreur
-    setTimeout(async () => {
+    // Générer les routes réelles après initialisation
+    setTimeout(() => {
       try {
-        const routes = await generateRealRoutes();
+        const routes = generateRealRoutes();
         setTrucksData(prev => prev.map(truck => {
           const fallbackRoute = [
             truck.position,
@@ -509,7 +509,7 @@ const MapCanvas = ({
           realRoute: [truck.position, truck.destinationCoords || truck.position]
         })));
       }
-    }, 500); // Réduit le délai pour une initialisation plus rapide
+    }, 300); // Délai réduit
 
     return () => {
       leafletMap.remove();
