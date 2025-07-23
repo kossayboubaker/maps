@@ -563,15 +563,30 @@ const MapCanvas = ({
       onMapReady(leafletMap);
     }
 
-    // Générer les routes réelles après initialisation
-    setTimeout(() => {
-      generateRealRoutes().then(routes => {
+    // Générer les routes réelles après initialisation avec gestion d'erreur
+    setTimeout(async () => {
+      try {
+        const routes = await generateRealRoutes();
+        setTrucksData(prev => prev.map(truck => {
+          const fallbackRoute = [
+            truck.position,
+            truck.destinationCoords || truck.destination?.coordinates || truck.position
+          ];
+
+          return {
+            ...truck,
+            realRoute: routes[truck.truck_id] || fallbackRoute
+          };
+        }));
+      } catch (error) {
+        console.warn('Erreur lors de l\'initialisation des routes:', error);
+        // Utiliser des routes simples en cas d'échec total
         setTrucksData(prev => prev.map(truck => ({
           ...truck,
-          realRoute: routes[truck.truck_id] || [truck.position, truck.destinationCoords || truck.position]
+          realRoute: [truck.position, truck.destinationCoords || truck.position]
         })));
-      });
-    }, 1000);
+      }
+    }, 500); // Réduit le délai pour une initialisation plus rapide
 
     return () => {
       leafletMap.remove();
