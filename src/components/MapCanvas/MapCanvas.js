@@ -877,7 +877,7 @@ const MapCanvas = ({
       map.removeLayer(weatherLayer);
       setWeatherLayer(null);
     }
-  }, [showWeather, map, weatherLayer]);
+  }, [showWeather, map, weatherLayer, isMapReady]);
 
   // Suivi automatique du camion sélectionné
   useEffect(() => {
