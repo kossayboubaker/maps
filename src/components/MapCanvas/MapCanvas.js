@@ -733,18 +733,162 @@ const MapCanvas = ({
 
   }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts]);
 
-  // Couche météo
+  // Créer marqueurs météo
+  const createWeatherIcon = (weather) => {
+    const iconMap = {
+      'Clear': '☀️',
+      'Clouds': '☁️',
+      'Rain': '🌧️',
+      'Drizzle': '🌦️',
+      'Thunderstorm': '⛈️',
+      'Snow': '❄️',
+      'Mist': '🌫️',
+      'Fog': '🌫️'
+    };
+
+    const icon = iconMap[weather.condition] || '🌤️';
+    const tempColor = weather.temp < 0 ? '#3b82f6' : weather.temp < 15 ? '#10b981' : weather.temp < 25 ? '#f59e0b' : '#ef4444';
+
+    return L.divIcon({
+      html: `
+        <div style="
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+          backdrop-filter: blur(10px);
+          border-radius: 16px;
+          padding: 12px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+          border: 2px solid rgba(255,255,255,0.3);
+          text-align: center;
+          min-width: 80px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        ">
+          <div style="font-size: 24px; margin-bottom: 4px;">${icon}</div>
+          <div style="
+            font-size: 16px;
+            font-weight: bold;
+            color: ${tempColor};
+            margin-bottom: 2px;
+          ">${weather.temp}°C</div>
+          <div style="
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: capitalize;
+          ">${weather.description}</div>
+          <div style="
+            font-size: 9px;
+            color: #9ca3af;
+            margin-top: 4px;
+          ">
+            🌬️ ${weather.windSpeed}km/h<br>
+            💧 ${weather.humidity}%
+          </div>
+        </div>
+      `,
+      className: 'weather-marker',
+      iconSize: [80, 80],
+      iconAnchor: [40, 40]
+    });
+  };
+
+  // Couche météo améliorée avec icônes visibles
   useEffect(() => {
     if (!map) return;
 
-    if (showWeather && !weatherLayer) {
-      const wLayer = L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${WEATHER_API_KEY}`, {
-        attribution: 'Weather data © OpenWeatherMap',
-        opacity: 0.6,
+    // Supprimer anciens marqueurs météo
+    map.eachLayer((layer) => {
+      if (layer.options && layer.options.className === 'weather-marker') {
+        map.removeLayer(layer);
+      }
+    });
+
+    if (showWeather) {
+      // Ajouter couche de précipitations
+      if (!weatherLayer) {
+        const wLayer = L.tileLayer(`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${WEATHER_API_KEY}`, {
+          attribution: 'Weather data © OpenWeatherMap',
+          opacity: 0.6,
+        });
+        wLayer.addTo(map);
+        setWeatherLayer(wLayer);
+      }
+
+      // Ajouter marqueurs météo sur les principales villes
+      const weatherCities = [
+        { name: 'Tunis', lat: 36.8065, lng: 10.1815 },
+        { name: 'Sfax', lat: 34.7406, lng: 10.7603 },
+        { name: 'Sousse', lat: 35.8256, lng: 10.6369 },
+        { name: 'Kairouan', lat: 35.6786, lng: 10.0963 },
+        { name: 'Gabes', lat: 33.8869, lng: 10.0982 },
+        { name: 'Bizerte', lat: 37.2744, lng: 9.8739 }
+      ];
+
+      weatherCities.forEach(async (city) => {
+        const weather = await fetchWeatherData(city.lat, city.lng, city.name);
+        if (weather) {
+          const weatherMarker = L.marker([city.lat, city.lng], {
+            icon: createWeatherIcon(weather),
+            className: 'weather-marker'
+          }).addTo(map);
+
+          weatherMarker.bindPopup(`
+            <div style="padding: 16px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+              <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #1f2937;">
+                ${weather.condition === 'Clear' ? '☀️' :
+                  weather.condition === 'Clouds' ? '☁️' :
+                  weather.condition === 'Rain' ? '🌧️' : '🌤️'} ${city.name}
+              </h3>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                <div>
+                  <div style="font-size: 24px; font-weight: bold; color: #3b82f6;">${weather.temp}°C</div>
+                  <div style="font-size: 12px; color: #6b7280;">Température</div>
+                </div>
+                <div>
+                  <div style="font-size: 16px; font-weight: bold; color: #10b981;">${weather.feelsLike}°C</div>
+                  <div style="font-size: 12px; color: #6b7280;">Ressenti</div>
+                </div>
+                <div>
+                  <div style="font-size: 16px; font-weight: bold; color: #f59e0b;">${weather.humidity}%</div>
+                  <div style="font-size: 12px; color: #6b7280;">Humidité</div>
+                </div>
+                <div>
+                  <div style="font-size: 16px; font-weight: bold; color: #ef4444;">${weather.windSpeed}km/h</div>
+                  <div style="font-size: 12px; color: #6b7280;">Vent</div>
+                </div>
+              </div>
+              <div style="
+                background: rgba(59, 130, 246, 0.1);
+                padding: 8px;
+                border-radius: 8px;
+                font-size: 13px;
+                color: #374151;
+                text-transform: capitalize;
+              ">
+                ${weather.description}
+              </div>
+              <div style="margin-top: 8px; font-size: 11px; color: #9ca3af;">
+                Visibilité: ${weather.visibility}km • Pression: ${weather.pressure}hPa
+              </div>
+            </div>
+          `);
+
+          // Effet de survol
+          weatherMarker.on('mouseover', () => {
+            setHoveredItem({
+              type: 'weather',
+              data: {
+                city: city.name,
+                ...weather
+              }
+            });
+          });
+
+          weatherMarker.on('mouseout', () => {
+            setHoveredItem(null);
+          });
+        }
       });
-      wLayer.addTo(map);
-      setWeatherLayer(wLayer);
     } else if (!showWeather && weatherLayer) {
+      // Supprimer couche de précipitations
       map.removeLayer(weatherLayer);
       setWeatherLayer(null);
     }
