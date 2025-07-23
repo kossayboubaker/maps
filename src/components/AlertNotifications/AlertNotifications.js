@@ -221,6 +221,25 @@ const AlertNotifications = ({
     });
   };
 
+  const handleDeleteAlert = (alertId, e) => {
+    e.stopPropagation();
+
+    // Supprimer des alertes actives générées
+    setActiveAlerts(prev => prev.filter(alert => alert.id !== alertId));
+
+    // Supprimer des nouvelles alertes
+    setNewAlertIds(prev => {
+      const updated = new Set(prev);
+      updated.delete(alertId);
+      return updated;
+    });
+
+    // Appeler la fonction de suppression parent si elle existe
+    if (onCloseAlert) {
+      onCloseAlert(alertId);
+    }
+  };
+
   if (!isOpen) {
     return (
       <button
