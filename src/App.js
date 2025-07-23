@@ -255,6 +255,7 @@ const App = () => {
   const [mapStyle, setMapStyle] = useState('standard');
   const [showAlerts, setShowAlerts] = useState(false);
   const [alerts, setAlerts] = useState(mockAlerts);
+  const [deletedAlerts, setDeletedAlerts] = useState([]);
   const [mapInstance, setMapInstance] = useState(null);
   const [showRoutes, setShowRoutes] = useState(true);
   const [showWeather, setShowWeather] = useState(false);
