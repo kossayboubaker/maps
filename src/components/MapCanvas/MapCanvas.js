@@ -61,6 +61,7 @@ const MapCanvas = ({
   };
 
   const getRealRoute = (startCoord, endCoord, waypoints = []) => {
+    // Trajectoires plus réalistes suivant les vraies routes
     const route = [startCoord];
 
     waypoints.forEach(wp => {
@@ -74,17 +75,26 @@ const MapCanvas = ({
 
       interpolatedRoute.push(currentPoint);
 
-      const steps = 8;
+      // Plus de points pour des routes plus réalistes
+      const distance = Math.sqrt(
+        Math.pow(nextPoint[0] - currentPoint[0], 2) +
+        Math.pow(nextPoint[1] - currentPoint[1], 2)
+      );
+      const steps = Math.max(12, Math.floor(distance * 50)); // Plus de points selon la distance
+
       for (let step = 1; step < steps; step++) {
         const ratio = step / steps;
-        const lat = currentPoint[0] + (nextPoint[0] - currentPoint[0]) * ratio;
-        const lng = currentPoint[1] + (nextPoint[1] - currentPoint[1]) * ratio;
+        let lat = currentPoint[0] + (nextPoint[0] - currentPoint[0]) * ratio;
+        let lng = currentPoint[1] + (nextPoint[1] - currentPoint[1]) * ratio;
 
-        const curvature = 0.01;
-        const randomLat = lat + (Math.random() - 0.5) * curvature;
-        const randomLng = lng + (Math.random() - 0.5) * curvature;
+        // Courbure réaliste basée sur la géographie
+        const curvature = 0.005 * Math.sin(ratio * Math.PI); // Courbure sinusoïdale plus naturelle
+        const perpendicular = Math.atan2(nextPoint[1] - currentPoint[1], nextPoint[0] - currentPoint[0]) + Math.PI/2;
 
-        interpolatedRoute.push([randomLat, randomLng]);
+        lat += curvature * Math.cos(perpendicular);
+        lng += curvature * Math.sin(perpendicular);
+
+        interpolatedRoute.push([lat, lng]);
       }
     }
 
@@ -204,23 +214,25 @@ const MapCanvas = ({
               <circle cx="17" cy="18" r="2"/>
             </svg>
           </div>
-          <div style="
-            position: absolute;
-            top: -16px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, ${speed > 0 ? '#10B981' : '#6B7280'} 0%, ${speed > 0 ? '#059669' : '#4B5563'} 100%);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: bold;
-            white-space: nowrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            border: 2px solid white;
-          ">
-            ${Math.round(speed)} km/h
-          </div>
+          ${speed > 0 && isSelected ? `
+            <div style="
+              position: absolute;
+              top: -12px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+              color: white;
+              padding: 2px 6px;
+              border-radius: 6px;
+              font-size: 9px;
+              font-weight: bold;
+              white-space: nowrap;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+              border: 1px solid white;
+            ">
+              ${Math.round(speed)} km/h
+            </div>
+          ` : ''}
         </div>
         <style>
           @keyframes alertPulse {
@@ -453,22 +465,38 @@ const MapCanvas = ({
         }).addTo(map);
 
         if (selectedDelivery && selectedDelivery.truck_id === truck.truck_id) {
-          // Marqueurs de départ et arrivée
+          // Marqueurs de départ et arrivée avec plus d'informations
           L.circleMarker(truck.realRoute[0], {
-            radius: 8,
+            radius: 10,
             color: '#10B981',
             fillColor: '#10B981',
-            fillOpacity: 1,
-            weight: 3,
-          }).addTo(map).bindPopup('🟢 Départ');
+            fillOpacity: 0.8,
+            weight: 4,
+            stroke: true,
+            strokeColor: '#fff',
+          }).addTo(map).bindPopup(`
+            <div style="text-align: center; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+              <strong>🟢 Point de Départ</strong><br>
+              <div style="margin: 4px 0; font-size: 13px;">${truck.pickup?.address || 'Départ'}</div>
+              <div style="font-size: 11px; color: #6b7280;">📍 ${truck.pickup?.city || ''}</div>
+            </div>
+          `);
 
           L.circleMarker(truck.realRoute[truck.realRoute.length - 1], {
-            radius: 8,
+            radius: 10,
             color: '#EF4444',
             fillColor: '#EF4444',
-            fillOpacity: 1,
-            weight: 3,
-          }).addTo(map).bindPopup('🔴 Destination');
+            fillOpacity: 0.8,
+            weight: 4,
+            stroke: true,
+            strokeColor: '#fff',
+          }).addTo(map).bindPopup(`
+            <div style="text-align: center; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+              <strong>🔴 Destination</strong><br>
+              <div style="margin: 4px 0; font-size: 13px;">${truck.destination || 'Arrivée'}</div>
+              <div style="font-size: 11px; color: #6b7280;">🕰️ ETA: ${new Date(truck.estimatedArrival).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</div>
+            </div>
+          `);
         }
       }
     });
