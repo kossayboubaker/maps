@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './AlertNotifications.css';
 
 const AlertNotifications = ({ 
@@ -12,7 +12,7 @@ const AlertNotifications = ({
   const [activeAlerts, setActiveAlerts] = useState([]);
 
   // Générer des alertes en temps réel intelligentes
-  const generateIntelligentAlerts = () => {
+  const generateIntelligentAlerts = useCallback(() => {
     const currentTime = new Date();
 
     // Alertes basées sur les données de trafic simulées
@@ -70,7 +70,7 @@ const AlertNotifications = ({
       }));
 
     return selectedAlerts;
-  };
+  }, []);
 
   const getAlertTitle = (type) => {
     const titles = {
@@ -97,7 +97,7 @@ const AlertNotifications = ({
   };
 
   // Générer alertes météo simulées (évite les appels API problématiques)
-  const generateWeatherAlerts = () => {
+  const generateWeatherAlerts = useCallback(() => {
     const weatherConditions = [
       {
         city: 'Tunis',
@@ -152,7 +152,7 @@ const AlertNotifications = ({
       });
 
     return alerts;
-  };
+  }, [trucks]);
 
   // Fonction supprimée - remplacée par generateWeatherAlerts
 
