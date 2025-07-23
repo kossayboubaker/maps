@@ -248,8 +248,12 @@ const mockAlerts = [
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDelivery, setSelectedDelivery] = useState(mockDeliveries[0]);
+  const [selectedTruck, setSelectedTruck] = useState(mockTrucks[0]);
   const [isAsideOpen, setIsAsideOpen] = useState(true);
+  const [mapStyle, setMapStyle] = useState('standard');
+  const [showAlerts, setShowAlerts] = useState(false);
+  const [alerts, setAlerts] = useState(mockAlerts);
+  const [mapInstance, setMapInstance] = useState(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -267,67 +271,179 @@ const App = () => {
     setSearchTerm(term);
   };
 
-  const handleDeliverySelect = (delivery) => {
-    setSelectedDelivery(delivery);
+  const handleTruckSelect = (truck) => {
+    setSelectedTruck(truck);
   };
 
+  const handleMapStyleChange = (style) => {
+    setMapStyle(style);
+  };
+
+  const handleZoomIn = () => {
+    if (mapInstance) {
+      mapInstance.zoomIn();
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (mapInstance) {
+      mapInstance.zoomOut();
+    }
+  };
+
+  const handleToggleAlerts = () => {
+    setShowAlerts(!showAlerts);
+  };
+
+  // Simuler des mises à jour d'alertes en temps réel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Simulation de nouvelles alertes
+      const newAlertTypes = [
+        {
+          type: 'weather',
+          icons: ['🌧️', '🌫️', '❄️', '⛈️'],
+          severities: ['warning', 'danger'],
+          locations: ['Autoroute A1', 'Route GP8', 'Centre-ville']
+        },
+        {
+          type: 'traffic',
+          icons: ['🚦', '🚗', '⚠️'],
+          severities: ['info', 'warning'],
+          locations: ['Rond-point', 'Avenue Habib Bourguiba', 'Zone industrielle']
+        }
+      ];
+
+      if (Math.random() < 0.3) { // 30% de chance d'avoir une nouvelle alerte
+        const alertType = newAlertTypes[Math.floor(Math.random() * newAlertTypes.length)];
+        const newAlert = {
+          id: `alert-${Date.now()}`,
+          type: alertType.type,
+          title: `${alertType.type === 'weather' ? 'Météo' : 'Trafic'} - ${alertType.locations[Math.floor(Math.random() * alertType.locations.length)]}`,
+          description: `Nouvelle alerte ${alertType.type} détectée`,
+          severity: alertType.severities[Math.floor(Math.random() * alertType.severities.length)],
+          position: [36.8 + (Math.random() - 0.5) * 2, 10.2 + (Math.random() - 0.5) * 2],
+          affectedRoutes: [`TN-00${Math.floor(Math.random() * 5) + 1}`],
+          timestamp: new Date().toISOString(),
+          delay: Math.floor(Math.random() * 30) + 5,
+          icon: alertType.icons[Math.floor(Math.random() * alertType.icons.length)],
+          location: alertType.locations[Math.floor(Math.random() * alertType.locations.length)]
+        };
+
+        setAlerts(prev => [newAlert, ...prev.slice(0, 9)]); // Garder max 10 alertes
+      }
+    }, 45000); // Nouvelle alerte potentielle toutes les 45 secondes
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className={`min-h-screen ${isAsideOpen ? 'bg-background' : 'bg-white'} overflow-hidden`}>
-      <Header />
-      <div className="flex h-[calc(100vh-60px)] w-full">
+    <div style={{
+      minHeight: '100vh',
+      background: '#f8fafc',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column'
+    }}>
+      <Header
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onMapStyleChange={handleMapStyleChange}
+        mapStyle={mapStyle}
+        alertsCount={alerts.length}
+        onToggleAlerts={handleToggleAlerts}
+        showAlerts={showAlerts}
+      />
+      <div style={{
+        display: 'flex',
+        height: 'calc(100vh - 76px)',
+        width: '100%'
+      }}>
         <aside
-          className={`transition-all duration-300 ${isAsideOpen ? 'w-full max-w-[280px] xxs:max-w-[300px] xs:max-w-[320px] xs2:max-w-[340px] sm:max-w-[360px] sm2:max-w-[380px] md:max-w-[400px]' : 'w-0'} bg-background border-r border-border flex-shrink-0 overflow-hidden`}
+          style={{
+            transition: 'all 0.3s ease',
+            width: isAsideOpen ? '400px' : '0',
+            maxWidth: isAsideOpen ? '400px' : '0',
+            background: '#ffffff',
+            borderRight: '2px solid rgba(59, 130, 246, 0.1)',
+            flexShrink: 0,
+            overflow: 'hidden',
+            boxShadow: isAsideOpen ? '4px 0 20px rgba(0, 0, 0, 0.1)' : 'none'
+          }}
         >
-          <DeliveryList
-            deliveries={mockDeliveries}
+          <TruckList
+            trucks={mockTrucks}
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
-            onSelectDelivery={handleDeliverySelect}
-            selectedDelivery={selectedDelivery}
+            onSelectTruck={handleTruckSelect}
+            selectedTruck={selectedTruck}
+            alerts={alerts}
           />
         </aside>
         <main
-          className={`flex-1 min-w-0 overflow-hidden ${isAsideOpen ? '' : 'w-full'}`}
+          style={{
+            flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            position: 'relative'
+          }}
         >
           <MapCanvas
-            deliveries={mockDeliveries}
-            selectedDelivery={selectedDelivery}
-            onSelectDelivery={handleDeliverySelect}
+            trucks={mockTrucks}
+            selectedTruck={selectedTruck}
+            onSelectTruck={handleTruckSelect}
+            alerts={alerts}
+            mapStyle={mapStyle}
+            onMapReady={setMapInstance}
+            showAlerts={showAlerts}
           />
         </main>
         <button
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
             position: 'absolute',
-            top: '80px',
-            left: isAsideOpen ? '10px' : '10px',
-            zIndex: 3000, // Priorité maximale
-            background: 'white',
+            top: '90px',
+            left: isAsideOpen ? '410px' : '10px',
+            zIndex: 3000,
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
             border: 'none',
             borderRadius: '50%',
-            width: '35px', // Augmenté pour une meilleure interaction mobile
-            height: '35px',
+            width: '48px',
+            height: '48px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
             cursor: 'pointer',
-            transition: 'left 0.3s ease, transform 0.3s ease', // Transition fluide
-            touchAction: 'manipulation', // Améliore les événements tactiles sur mobile
+            transition: 'all 0.3s ease',
+            touchAction: 'manipulation',
+            color: 'white'
           }}
-          className={`${isAsideOpen ? 'transform rotate-180' : ''}`} // Rotation subtile
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 25px rgba(59, 130, 246, 0.6)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.4)';
+          }}
+          title={isAsideOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
         >
           <svg
-            width="20"
-            height="20"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
+            style={{
+              transform: isAsideOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.3s ease'
+            }}
           >
-           <path d={isAsideOpen ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
+           <path d="M9 18l6-6-6-6" />
           </svg>
         </button>
       </div>
