@@ -8,13 +8,32 @@
   --border-radius: 0.5rem;
 }
 
+/* Éliminer complètement le scroll */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100vh;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden !important;
+}
+
 /* Reset et styles de base */
 .delivery-app {
   display: flex;
   flex-direction: column;
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  overflow: hidden !important;
   background: hsl(var(--background));
 }
 
@@ -184,5 +203,3 @@
     height: 600px;
   }
 }
-
-
