@@ -495,42 +495,58 @@ const MapCanvas = ({
   useEffect(() => {
     if (!map || !map.getContainer()) return;
 
-    // Nettoyer les marqueurs existants
-    map.eachLayer((layer) => {
-      if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
-        map.removeLayer(layer);
-      }
-    });
-
-    // Ajouter les camions
-    trucksData.forEach((truck) => {
-      const marker = L.marker(truck.position, {
-        icon: createTruckIcon(truck),
-      }).addTo(map);
-
-      // Événements de survol pour les tooltips
-      marker.on('mouseover', (e) => {
-        setHoveredItem({
-          type: 'truck',
-          data: truck,
-          alerts: alerts.filter(alert => 
-            alert.affectedRoutes && alert.affectedRoutes.includes(truck.truck_id)
-          )
+    // Attendre que la carte soit prête
+    const timer = setTimeout(() => {
+      try {
+        // Nettoyer les marqueurs existants
+        map.eachLayer((layer) => {
+          if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
+            map.removeLayer(layer);
+          }
         });
-      });
 
-      marker.on('mouseout', () => {
-        setHoveredItem(null);
-      });
+        // Ajouter les camions
+        trucksData.forEach((truck) => {
+          if (!truck.position || !Array.isArray(truck.position) || truck.position.length < 2) {
+            return;
+          }
+          try {
+            const marker = L.marker(truck.position, {
+              icon: createTruckIcon(truck),
+            });
 
-      marker.on('click', () => {
-        onSelectDelivery(truck);
-        // Toujours centrer sur le camion cliqué
-        map.flyTo(truck.position, Math.max(map.getZoom(), 13), {
-          animate: true,
-          duration: 1.2
-        });
-      });
+            if (map && map.getContainer()) {
+              marker.addTo(map);
+            }
+
+            // Événements de survol pour les tooltips
+            marker.on('mouseover', (e) => {
+              setHoveredItem({
+                type: 'truck',
+                data: truck,
+                alerts: alerts.filter(alert =>
+                  alert.affectedRoutes && alert.affectedRoutes.includes(truck.truck_id)
+                )
+              });
+            });
+
+            marker.on('mouseout', () => {
+              setHoveredItem(null);
+            });
+
+            marker.on('click', () => {
+              onSelectDelivery(truck);
+              // Toujours centrer sur le camion cliqué
+              if (map && map.getContainer()) {
+                map.flyTo(truck.position, Math.max(map.getZoom(), 13), {
+                  animate: true,
+                  duration: 1.2
+                });
+              }
+            });
+          } catch (error) {
+            console.warn('Erreur ajout marqueur camion:', truck.truck_id, error);
+          }
 
       // Affichage des routes avec trajectoires réelles
       if (showRoutes && truck.realRoute && truck.realRoute.length > 1) {
@@ -605,28 +621,36 @@ const MapCanvas = ({
           `);
         }
       }
-    });
-
-    // Ajouter les alertes
-    if (showAlerts) {
-      alerts.forEach(alert => {
-        const alertMarker = L.marker(alert.position, {
-          icon: createAlertIcon(alert),
-        }).addTo(map);
-
-        // Événements de survol pour les tooltips
-        alertMarker.on('mouseover', () => {
-          setHoveredItem({
-            type: 'alert',
-            data: alert
-          });
         });
 
-        alertMarker.on('mouseout', () => {
-          setHoveredItem(null);
-        });
+        // Ajouter les alertes
+        if (showAlerts) {
+          alerts.forEach(alert => {
+            try {
+              if (!alert.position || !Array.isArray(alert.position) || alert.position.length < 2) {
+                return;
+              }
+              const alertMarker = L.marker(alert.position, {
+                icon: createAlertIcon(alert),
+              });
 
-        alertMarker.bindPopup(`
+              if (map && map.getContainer()) {
+                alertMarker.addTo(map);
+              }
+
+              // Événements de survol pour les tooltips
+              alertMarker.on('mouseover', () => {
+                setHoveredItem({
+                  type: 'alert',
+                  data: alert
+                });
+              });
+
+              alertMarker.on('mouseout', () => {
+                setHoveredItem(null);
+              });
+
+              alertMarker.bindPopup(`
           <div style="padding: 12px; min-width: 200px;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
               <span style="font-size: 20px;">${alert.icon}</span>
@@ -639,9 +663,18 @@ const MapCanvas = ({
               🚛 Affecte: ${alert.affectedRoutes?.join(', ')}
             </div>
           </div>
-        `);
-      });
-    }
+              `);
+            } catch (error) {
+              console.warn('Erreur ajout marqueur alerte:', alert.id, error);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Erreur lors de l\'ajout des marqueurs:', error);
+      }
+    }, 100); // Délai de 100ms pour s’assurer que le DOM est prêt
+
+    return () => clearTimeout(timer);
 
   }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts, createTruckIcon, onSelectDelivery]);
 
