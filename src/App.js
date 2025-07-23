@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header/Header.js';
-import DeliveryList from './components/DeliveryList/DeliveryList.js';
+import TruckList from './components/TruckList/TruckList.js';
 import MapCanvas from './components/MapCanvas/MapCanvas.js';
 
 const mockDeliveries = [
