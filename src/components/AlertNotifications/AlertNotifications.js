@@ -78,7 +78,7 @@ const AlertNotifications = ({
       accident: 'Accident de circulation',
       construction: 'Travaux en cours',
       traffic: 'Embouteillage',
-      police: 'Contr��le police',
+      police: 'Contrôle police',
       weather: 'Alerte météo',
       maintenance: 'Maintenance route'
     };
@@ -173,8 +173,30 @@ const AlertNotifications = ({
     const updateAlerts = () => {
       const trafficAlerts = generateIntelligentAlerts();
       const weatherAlertsData = generateWeatherAlerts();
+      const allGeneratedAlerts = [...trafficAlerts, ...weatherAlertsData];
 
-      setActiveAlerts([...trafficAlerts, ...weatherAlertsData]);
+      // Marquer les nouvelles alertes pour l'ombre
+      const currentAlertIds = new Set(activeAlerts.map(a => a.id));
+      const newIds = new Set();
+      allGeneratedAlerts.forEach(alert => {
+        if (!currentAlertIds.has(alert.id)) {
+          newIds.add(alert.id);
+        }
+      });
+
+      if (newIds.size > 0) {
+        setNewAlertIds(newIds);
+        // Retirer l'ombre après 10 secondes
+        setTimeout(() => {
+          setNewAlertIds(prev => {
+            const updated = new Set(prev);
+            newIds.forEach(id => updated.delete(id));
+            return updated;
+          });
+        }, 10000);
+      }
+
+      setActiveAlerts(allGeneratedAlerts);
     };
 
     // Mise à jour initiale
