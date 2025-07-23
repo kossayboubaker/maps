@@ -1169,9 +1169,7 @@ const MapCanvas = ({
           overflow: 'hidden'
         }}
       />
-      
-      <ControlPanel />
-      
+
       {/* Tooltip au survol */}
       {hoveredItem && (
         <div
