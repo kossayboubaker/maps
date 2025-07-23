@@ -605,7 +605,7 @@ const MapCanvas = ({
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [trucks]);
+  }, [deliveries]);
 
   // Panneau de contrôle
   const ControlPanel = () => {
