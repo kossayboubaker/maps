@@ -62,22 +62,33 @@ const MapCanvas = ({
   };
 
   const getRealRoute = (startCoord, endCoord, waypoints = []) => {
-    // Trajectoires suivant vraiment les routes terrestres avec évitement de la mer
+    // Trajectoires TERRESTRES uniquement - pas de mer
     const route = [startCoord];
 
-    // Points de passage optimisés pour éviter la mer
-    const optimizedWaypoints = waypoints.map(wp => {
-      const point = [wp.lat || wp[0], wp.lng || wp[1]];
-      // Vérifier si le point n'est pas dans la mer (approximation basique)
-      if (point[1] > 11.5 || point[1] < 7.5) { // Ajuster longitude pour rester sur terre
-        point[1] = Math.max(7.5, Math.min(11.5, point[1]));
+    // Fonction pour vérifier si un point est sur terre (Tunisie)
+    const isOnLand = (lat, lng) => {
+      // Limites approximatives de la Tunisie continentale
+      return lat >= 30.5 && lat <= 37.5 && lng >= 8.0 && lng <= 11.8 &&
+             !(lat > 36.5 && lng < 9.5) && // Éviter mer au nord-ouest
+             !(lat > 35.5 && lng > 11.2) && // Éviter mer à l'est
+             !(lat < 33.0 && lng < 9.0); // Éviter mer au sud-ouest
+    };
+
+    // Points de passage forcés sur terre
+    const safeWaypoints = waypoints.map(wp => {
+      let lat = wp.lat || wp[0];
+      let lng = wp.lng || wp[1];
+
+      // Forcer sur terre si dans la mer
+      if (!isOnLand(lat, lng)) {
+        // Ramener vers l'intérieur des terres
+        lat = Math.max(30.8, Math.min(37.2, lat));
+        lng = Math.max(8.2, Math.min(11.5, lng));
       }
-      return point;
+      return [lat, lng];
     });
 
-    optimizedWaypoints.forEach(wp => {
-      route.push(wp);
-    });
+    safeWaypoints.forEach(wp => route.push(wp));
 
     const interpolatedRoute = [];
     for (let i = 0; i < route.length - 1; i++) {
@@ -86,30 +97,22 @@ const MapCanvas = ({
 
       interpolatedRoute.push(currentPoint);
 
-      // Calcul de distance plus précis
-      const distance = Math.sqrt(
-        Math.pow(nextPoint[0] - currentPoint[0], 2) +
-        Math.pow(nextPoint[1] - currentPoint[1], 2)
-      );
-      const steps = Math.max(20, Math.floor(distance * 80)); // Plus de détails
+      const steps = 15; // Moins de points pour éviter la mer
 
       for (let step = 1; step < steps; step++) {
         const ratio = step / steps;
         let lat = currentPoint[0] + (nextPoint[0] - currentPoint[0]) * ratio;
         let lng = currentPoint[1] + (nextPoint[1] - currentPoint[1]) * ratio;
 
-        // Courbure plus naturelle suivant les routes
-        const roadCurvature = 0.008 * Math.sin(ratio * Math.PI * 2) * Math.cos(ratio * Math.PI);
-        const perpendicular = Math.atan2(nextPoint[1] - currentPoint[1], nextPoint[0] - currentPoint[0]) + Math.PI/2;
+        // Très légère courbure vers l'intérieur
+        const inlandCurvature = 0.003 * Math.sin(ratio * Math.PI);
+        lat += inlandCurvature; // Toujours vers l'intérieur
 
-        lat += roadCurvature * Math.cos(perpendicular);
-        lng += roadCurvature * Math.sin(perpendicular);
-
-        // Éviter la mer - ajustement automatique
-        if (lng > 11.5) lng = 11.5;
-        if (lng < 7.5) lng = 7.5;
-        if (lat > 37.5) lat = 37.5;
-        if (lat < 30.5) lat = 30.5;
+        // Vérification stricte - si point dans mer, le ramener sur terre
+        if (!isOnLand(lat, lng)) {
+          lat = Math.max(30.8, Math.min(37.2, lat));
+          lng = Math.max(8.2, Math.min(11.5, lng));
+        }
 
         interpolatedRoute.push([lat, lng]);
       }
