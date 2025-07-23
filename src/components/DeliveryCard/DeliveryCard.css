@@ -12,7 +12,8 @@
   gap: 8px;
   overflow: hidden;
   word-break: break-word;
-  min-height: 140px; /* Augmenté à 140px pour réduire l'espacement avec la pagination */
+  min-height: 140px;
+  /* Augmenté à 140px pour réduire l'espacement avec la pagination */
 }
 
 /* Header avec badge éco et ID */
