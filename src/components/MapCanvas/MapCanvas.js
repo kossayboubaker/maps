@@ -23,6 +23,8 @@ const MapCanvas = ({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const cleanupRef = useRef(null);
 
 
 
@@ -427,24 +429,42 @@ const MapCanvas = ({
 
   // Initialisation de la carte
   useEffect(() => {
-    // Vérifier que l'élément DOM existe avant d'initialiser Leaflet
+    // Vérifier que l'élément DOM existe et n'est pas déjà initialisé
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) {
       console.warn('Élément map-container non trouvé');
       return;
     }
 
+    // Si une carte existe déjà, ne pas réinitialiser
+    if (mapInstanceRef.current) {
+      console.warn('Carte déjà initialisée');
+      return;
+    }
+
+    // Nettoyer le conteneur au cas où
+    mapContainer.innerHTML = '';
+    mapContainer._leaflet_id = null;
+
     configureLeafletIcons();
 
     // Attendre un tick pour s'assurer que le DOM est complètement prêt
     const initializeMap = () => {
       try {
+        // Vérifier une dernière fois que l'élément existe et n'a pas de carte
+        const container = document.getElementById('map-container');
+        if (!container || container._leaflet_id) {
+          return;
+        }
+
         const leafletMap = L.map('map-container', {
           center: [36.8065, 10.1815],
           zoom: 7,
           scrollWheelZoom: true,
           zoomControl: false,
         });
+
+        mapInstanceRef.current = leafletMap;
 
         const tileLayers = {
           standard: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -461,12 +481,15 @@ const MapCanvas = ({
         // Attendre que la carte soit prête avant d'ajouter les layers
         leafletMap.whenReady(() => {
           try {
-            tileLayers.standard.addTo(leafletMap);
-            setMap(leafletMap);
-            setIsMapReady(true);
+            // Vérifier que la carte est toujours valide
+            if (leafletMap && leafletMap.getContainer()) {
+              tileLayers.standard.addTo(leafletMap);
+              setMap(leafletMap);
+              setIsMapReady(true);
 
-            if (onMapReady) {
-              onMapReady(leafletMap);
+              if (onMapReady) {
+                onMapReady(leafletMap);
+              }
             }
           } catch (error) {
             console.error('Erreur ajout layer initial:', error);
@@ -498,28 +521,44 @@ const MapCanvas = ({
           }
         }, 500); // Délai augmenté pour sécurité
 
-        return () => {
+        // Stocker la fonction de cleanup
+        cleanupRef.current = () => {
           try {
-            if (leafletMap) {
+            if (leafletMap && leafletMap.getContainer()) {
+              leafletMap.off();
               leafletMap.remove();
             }
           } catch (error) {
             console.warn('Erreur suppression carte:', error);
+          } finally {
+            mapInstanceRef.current = null;
+            setMap(null);
+            setIsMapReady(false);
           }
         };
+
       } catch (error) {
         console.error('Erreur initialisation Leaflet:', error);
+        mapInstanceRef.current = null;
       }
     };
 
-    // Utiliser requestAnimationFrame pour s'assurer que le DOM est prêt
-    requestAnimationFrame(initializeMap);
+    // Utiliser un délai pour s'assurer que le DOM est stable
+    const timer = setTimeout(initializeMap, 100);
 
     return () => {
-      // Cleanup en cas d'erreur d'initialisation
+      clearTimeout(timer);
+
+      // Nettoyer la carte si elle existe
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+
+      // Nettoyer le conteneur
       const container = document.getElementById('map-container');
       if (container) {
         container.innerHTML = '';
+        container._leaflet_id = null;
       }
     };
   }, [generateRealRoutes, onMapReady]);
