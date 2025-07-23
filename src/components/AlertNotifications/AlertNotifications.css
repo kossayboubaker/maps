@@ -302,6 +302,29 @@
   background: rgba(0,0,0,0.3);
 }
 
+/* Animations */
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .alert-notifications-panel {
