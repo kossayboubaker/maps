@@ -339,14 +339,11 @@ const App = () => {
   }, []);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
-      overflow: 'hidden',
-      display: 'flex',
-      flexDirection: 'column'
-    }}>
-      <Header
+    <div className={`min-h-screen ${isAsideOpen ? 'bg-background' : 'bg-white'} overflow-hidden`}>
+      <Header />
+
+      {/* MapControlPanel selon capture 3 */}
+      <MapControlPanel
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onMapStyleChange={handleMapStyleChange}
@@ -356,11 +353,11 @@ const App = () => {
         showAlerts={showAlerts}
       />
 
-      {/* Panneau de notifications amélioré */}
+      {/* Panneau de notifications amélioré - glissé vers le bas */}
       {showAlerts && alerts.length > 0 && (
         <div style={{
           position: 'fixed',
-          top: '120px', // Glissé vers le bas
+          top: '160px', // Plus bas pour éviter conflit avec MapControlPanel
           right: '20px',
           zIndex: 2000,
           width: '380px',
@@ -515,114 +512,64 @@ const App = () => {
         </div>
       )}
 
-      <div style={{
-        display: 'flex',
-        height: 'calc(100vh - 76px)',
-        width: '100%'
-      }}>
+      <div className="flex h-[calc(100vh-60px)] w-full">
         <aside
-          style={{
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            width: isAsideOpen ? '420px' : '0',
-            maxWidth: isAsideOpen ? '420px' : '0',
-            background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-            borderRight: '3px solid rgba(59, 130, 246, 0.15)',
-            flexShrink: 0,
-            overflow: 'hidden',
-            boxShadow: isAsideOpen ? '8px 0 40px rgba(0, 0, 0, 0.12)' : 'none',
-            position: 'relative'
-          }}
+          className={`transition-all duration-300 ${isAsideOpen ? 'w-full max-w-[280px] xxs:max-w-[300px] xs:max-w-[320px] xs2:max-w-[340px] sm:max-w-[360px] sm2:max-w-[380px] md:max-w-[400px]' : 'w-0'} bg-background border-r border-border flex-shrink-0 overflow-hidden`}
         >
-          {/* Effet de lumière sur le bord */}
-          {isAsideOpen && (
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '2px',
-              height: '100%',
-              background: 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 50%, #3b82f6 100%)',
-              opacity: 0.6,
-              animation: 'glow 3s ease-in-out infinite alternate'
-            }} />
-          )}
-
-          <TruckList
-            trucks={mockTrucks}
+          <DeliveryList
+            deliveries={mockTrucks}
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
-            onSelectTruck={handleTruckSelect}
-            selectedTruck={selectedTruck}
-            alerts={alerts}
+            onSelectDelivery={handleDeliverySelect}
+            selectedDelivery={selectedDelivery}
           />
         </aside>
-
         <main
-          style={{
-            flex: 1,
-            minWidth: 0,
-            overflow: 'hidden',
-            position: 'relative',
-            background: '#f1f5f9'
-          }}
+          className={`flex-1 min-w-0 overflow-hidden ${isAsideOpen ? '' : 'w-full'}`}
         >
           <MapCanvas
-            trucks={mockTrucks}
-            selectedTruck={selectedTruck}
-            onSelectTruck={handleTruckSelect}
+            deliveries={mockTrucks}
+            selectedDelivery={selectedDelivery}
+            onSelectDelivery={handleDeliverySelect}
             alerts={alerts}
             mapStyle={mapStyle}
             onMapReady={setMapInstance}
             showAlerts={showAlerts}
           />
         </main>
-
         <button
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
             position: 'absolute',
-            top: '100px',
-            left: isAsideOpen ? '430px' : '20px',
+            top: '180px', // Glissé vers le bas pour éviter conflit avec MapControlPanel
+            left: isAsideOpen ? '10px' : '10px',
             zIndex: 3000,
-            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-            border: '3px solid rgba(255, 255, 255, 0.8)',
+            background: 'white',
+            border: 'none',
             borderRadius: '50%',
-            width: '56px',
-            height: '56px',
+            width: '35px',
+            height: '35px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.4)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
             cursor: 'pointer',
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            transition: 'left 0.3s ease, transform 0.3s ease',
             touchAction: 'manipulation',
-            color: 'white'
           }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.15) rotate(5deg)';
-            e.target.style.boxShadow = '0 12px 40px rgba(59, 130, 246, 0.6)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1) rotate(0deg)';
-            e.target.style.boxShadow = '0 8px 32px rgba(59, 130, 246, 0.4)';
-          }}
-          title={isAsideOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
+          className={`${isAsideOpen ? 'transform rotate-180' : ''}`}
         >
           <svg
-            width="28"
-            height="28"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="3"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            style={{
-              transform: isAsideOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.4s ease'
-            }}
           >
-           <path d="M9 18l6-6-6-6" />
+           <path d={isAsideOpen ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
           </svg>
         </button>
       </div>
@@ -637,17 +584,6 @@ const App = () => {
             to {
               transform: translateX(0);
               opacity: 1;
-            }
-          }
-
-          @keyframes glow {
-            from {
-              opacity: 0.4;
-              box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-            }
-            to {
-              opacity: 0.8;
-              box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
             }
           }
         `}
