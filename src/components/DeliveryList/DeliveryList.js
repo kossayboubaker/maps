@@ -1,22 +1,38 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import DeliveryCard from '../DeliveryCard/DeliveryCard';
 
-const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
+const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery, onSelectDelivery, alerts = [] }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 2;
 
-  // Filtrage des livraisons en fonction du terme de recherche
+  // Recherche intelligente améliorée
   const filteredDeliveries = useMemo(() => {
     if (!searchTerm) return deliveries;
 
-    const term = searchTerm.toLowerCase();
-    return deliveries.filter(delivery =>
-      delivery.id.toLowerCase().includes(term) ||
-      delivery.driver.name.toLowerCase().includes(term) ||
-      delivery.pickup.address.toLowerCase().includes(term) ||
-      delivery.destination.address.toLowerCase().includes(term) ||
-      delivery.vehicle.toLowerCase().includes(term)
-    );
+    const term = searchTerm.toLowerCase().trim();
+    return deliveries.filter(delivery => {
+      // Recherche dans tous les champs pertinents
+      const searchableFields = [
+        delivery.truck_id,
+        delivery.id,
+        delivery.driver?.name,
+        delivery.pickup?.address,
+        delivery.pickup?.city,
+        delivery.destination,
+        delivery.vehicle,
+        delivery.cargo,
+        delivery.cargo_type,
+        delivery.state,
+        delivery.driver?.company
+      ].filter(Boolean).map(field => field.toString().toLowerCase());
+
+      // Recherche par mots-clés multiples
+      const searchWords = term.split(' ').filter(word => word.length > 0);
+
+      return searchWords.every(word =>
+        searchableFields.some(field => field.includes(word))
+      );
+    });
   }, [deliveries, searchTerm]);
 
   // Pagination
@@ -43,18 +59,25 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
     setCurrentPage(0);
   }, [searchTerm]);
 
-  // Statistiques de la flotte (ajout selon capture 2)
+  // Statistiques réelles de la flotte connectées aux vraies données
   const fleetStats = useMemo(() => {
     const total = deliveries.length;
     const enRoute = deliveries.filter(d => d.state === 'En Route').length;
-    const atDestination = deliveries.filter(d => d.state === 'At Destination').length;
-    const totalAlerts = deliveries.reduce((sum, d) => sum + (d.alerts?.length || 0), 0);
-    const avgSpeed = deliveries.length > 0
-      ? Math.round(deliveries.reduce((sum, d) => sum + (d.speed || 0), 0) / deliveries.length)
+    const arrived = deliveries.filter(d => d.state === 'At Destination').length;
+
+    // Calculer vraies alertes depuis le prop alerts
+    const alertsAffectingTrucks = alerts.filter(alert =>
+      alert.affectedRoutes && alert.affectedRoutes.length > 0
+    ).length;
+
+    // Vitesse moyenne des camions en route
+    const trucksInRoute = deliveries.filter(d => d.state === 'En Route');
+    const avgSpeed = trucksInRoute.length > 0
+      ? Math.round(trucksInRoute.reduce((sum, d) => sum + (d.speed || 0), 0) / trucksInRoute.length)
       : 0;
 
-    return { total, enRoute, atDestination, totalAlerts, avgSpeed };
-  }, [deliveries]);
+    return { total, enRoute, arrived, totalAlerts: alertsAffectingTrucks, avgSpeed };
+  }, [deliveries, alerts]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -116,7 +139,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.atDestination}</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.arrived}</div>
             <div style={{ fontSize: '9px', marginTop: '1px' }}>Arrivés</div>
           </div>
           <div style={{
@@ -154,7 +177,12 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
-            <DeliveryCard key={delivery.id} delivery={delivery} />
+            <DeliveryCard
+              key={delivery.id}
+              delivery={delivery}
+              isSelected={selectedDelivery?.truck_id === delivery.truck_id}
+              onSelect={() => onSelectDelivery && onSelectDelivery(delivery)}
+            />
           ))
         ) : (
           <div className="flex flex-col items-center justify-center h-32 xxs:h-40 xs:h-48 text-center">
