@@ -518,9 +518,11 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter les alertes - toujours visibles si il y en a
+    // Ajouter les alertes - toujours visibles si il y en a (exclure les supprimées)
     if (alerts && alerts.length > 0) {
-      alerts.forEach(alert => {
+      const filteredAlerts = alerts.filter(alert => !deletedAlerts?.includes(alert.id));
+
+      filteredAlerts.forEach(alert => {
         if (!alert.position || alert.position.length < 2) return;
 
         const alertMarker = L.marker(alert.position, {
@@ -538,20 +540,63 @@ const MapCanvas = ({
           setHoveredItem(null);
         });
 
+        // Popup plus détaillé avec contenu réel
         alertMarker.bindPopup(`
-          <div style="padding: 12px; min-width: 200px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <span style="font-size: 20px;">${alert.icon}</span>
-              <strong style="color: #1f2937;">${alert.title}</strong>
+          <div style="padding: 16px; min-width: 250px; max-width: 300px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">
+              <div style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: ${alert.severity === 'danger' ? '#fecaca' : alert.severity === 'warning' ? '#fed7aa' : '#dbeafe'};
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+              ">
+                ${alert.icon}
+              </div>
+              <div style="flex: 1;">
+                <h3 style="margin: 0; color: #1f2937; font-size: 16px; font-weight: 600;">${alert.title}</h3>
+                <p style="margin: 2px 0 0 0; color: #6b7280; font-size: 12px;">${alert.location}</p>
+              </div>
             </div>
-            <p style="margin: 4px 0; color: #6b7280; font-size: 13px;">${alert.description}</p>
-            <div style="margin-top: 8px; font-size: 12px; color: #9ca3af;">
-              📍 ${alert.location}<br>
-              ⏱️ Retard estimé: +${alert.delay} minutes<br>
-              🚛 Affecte: ${alert.affectedRoutes?.join(', ')}
+
+            <div style="margin-bottom: 12px;">
+              <p style="margin: 0; color: #4b5563; font-size: 14px; line-height: 1.4;">${alert.description}</p>
+            </div>
+
+            <div style="display: grid; gap: 8px; font-size: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #6b7280;">⏱️ Retard estimé:</span>
+                <span style="
+                  background: ${alert.severity === 'danger' ? '#ef4444' : alert.severity === 'warning' ? '#f59e0b' : '#3b82f6'};
+                  color: white;
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                  font-weight: 600;
+                ">+${alert.delay} min</span>
+              </div>
+
+              ${alert.affectedRoutes && alert.affectedRoutes.length > 0 ? `
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #6b7280;">🚛 Camions affectés:</span>
+                  <span style="color: #1f2937; font-weight: 500;">${alert.affectedRoutes.join(', ')}</span>
+                </div>
+              ` : ''}
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #6b7280;">📅 Heure:</span>
+                <span style="color: #1f2937; font-weight: 500;">${new Date(alert.timestamp).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+              </div>
             </div>
           </div>
         `);
+
+        // Auto-ouverture popup au clic (contenu réel visible)
+        alertMarker.on('click', () => {
+          alertMarker.openPopup();
+        });
       });
     }
 
