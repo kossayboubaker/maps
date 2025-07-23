@@ -501,8 +501,8 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter les alertes
-    if (showAlerts) {
+    // Ajouter les alertes - toujours visibles si il y en a
+    if (alerts && alerts.length > 0) {
       alerts.forEach(alert => {
         if (!alert.position || alert.position.length < 2) return;
 
@@ -769,7 +769,7 @@ const MapCanvas = ({
                 fontSize: '11px',
                 color: '#9ca3af'
               }}>
-                <span>🚛 {hoveredItem.data.affectedRoutes?.join(', ')}</span>
+                <span>��� {hoveredItem.data.affectedRoutes?.join(', ')}</span>
                 <span style={{ 
                   background: hoveredItem.data.severity === 'danger' ? '#ef4444' : 
                              hoveredItem.data.severity === 'warning' ? '#f59e0b' : '#3b82f6',
