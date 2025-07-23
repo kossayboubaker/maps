@@ -58,8 +58,8 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-2 xxs:p-3 xs:p-4 sm:p-5 border-b border-border flex-shrink-0">
-        <div className="relative mb-6 ml-10">
+      <div className="p-2 border-b border-border flex-shrink-0">
+        <div className="relative mb-3 ml-8">
           <svg
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4"
             fill="none"
