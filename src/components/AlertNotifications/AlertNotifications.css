@@ -18,20 +18,21 @@
 
 .alert-notifications-panel {
   position: fixed;
-  top: '190px';
+  top: 200px;
   right: 20px;
-  z-index: 1000;
+  z-index: 2500;
   width: 420px;
   max-width: 90vw;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
-  backdrop-filter: blur(25px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
+  backdrop-filter: blur(30px);
   border-radius: 24px;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.12);
-  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.4);
+  border: 2px solid rgba(255,255,255,0.4);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  max-height: 70vh;
+  max-height: calc(100vh - 220px);
+  animation: slideInFromRight 0.4s ease-out;
 }
 
 .alert-notifications-header {
