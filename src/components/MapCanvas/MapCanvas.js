@@ -126,49 +126,66 @@ const MapCanvas = ({
       let startCoord, endCoord, waypoints = [];
 
       switch (truck.truck_id) {
-        case 'TN-001':
-          startCoord = [36.8065, 10.1815];
-          endCoord = [34.7406, 10.7603];
+        case 'TN-001': // Tunis vers Sfax (route A1 + GP1)
+          startCoord = [36.8065, 10.1815]; // Tunis
+          endCoord = [34.7406, 10.7603]; // Sfax
           waypoints = [
-            [36.7456, 10.0654],
-            [36.4123, 9.9543],
-            [35.8765, 9.8321],
+            [36.7200, 10.2100], // Sortie Tunis
+            [36.4500, 10.1800], // Autoroute A1
+            [36.1000, 10.1500], // Hammamet junction
+            [35.7000, 10.3000], // Enfidha
+            [35.2000, 10.5000], // Kairouan direction
+            [34.9000, 10.6000], // Approche Sfax
           ];
           break;
-        case 'TN-002':
-          startCoord = [36.8065, 10.1815];
-          endCoord = [35.8256, 10.6369];
+        case 'TN-002': // Tunis vers Sousse (route côtière)
+          startCoord = [36.8065, 10.1815]; // Tunis
+          endCoord = [35.8256, 10.6369]; // Sousse
           waypoints = [
-            [36.6543, 10.3654],
-            [36.5109, 10.4988],
+            [36.7000, 10.3000], // La Marsa
+            [36.6000, 10.4000], // Gammarth route
+            [36.3000, 10.5000], // Nabeul direction
+            [36.1000, 10.5500], // Hammamet
+            [35.9500, 10.6000], // Approche Sousse
           ];
           break;
-        case 'TN-003':
-          startCoord = [36.4098, 10.1398];
-          endCoord = [35.6786, 10.0963];
+        case 'TN-003': // Ariana vers Kairouan (route intérieure)
+          startCoord = [36.4098, 10.1398]; // Ariana
+          endCoord = [35.6786, 10.0963]; // Kairouan
           waypoints = [
-            [36.1, 10.0],
-            [35.9, 9.9],
+            [36.3000, 10.1000], // Sortie Ariana
+            [36.1000, 10.0500], // Route GP3
+            [35.9000, 10.0000], // Zaghouan region
+            [35.8000, 10.0500], // Approche Kairouan
           ];
           break;
-        case 'TN-004':
-          startCoord = [36.7538, 10.2286];
-          endCoord = [36.4561, 10.7376];
+        case 'TN-004': // La Goulette vers Nabeul (route côtière)
+          startCoord = [36.7538, 10.2286]; // La Goulette
+          endCoord = [36.4561, 10.7376]; // Nabeul
           waypoints = [
-            [36.8, 10.4],
+            [36.7000, 10.3000], // Route côtière
+            [36.6000, 10.4500], // Sidi Bou Said area
+            [36.5500, 10.5500], // Hammamet direction
+            [36.5000, 10.6500], // Approche Nabeul
           ];
           break;
-        case 'TN-005':
-          startCoord = [34.7406, 10.7603];
-          endCoord = [33.8869, 10.0982];
+        case 'TN-005': // Sfax vers Gabes (route du sud)
+          startCoord = [34.7406, 10.7603]; // Sfax
+          endCoord = [33.8869, 10.0982]; // Gabes
           waypoints = [
-            [34.4, 10.6],
-            [34.1, 10.4],
+            [34.6000, 10.6000], // Sortie Sfax
+            [34.4000, 10.4000], // Route GP1 sud
+            [34.2000, 10.3000], // Mahres region
+            [34.0000, 10.2000], // Approche Gabes
           ];
           break;
         default:
           startCoord = truck.pickup?.coordinates || truck.position;
           endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
+          // Routes génériques évitant la mer
+          const midLat = (startCoord[0] + endCoord[0]) / 2;
+          const midLng = Math.max(8.0, Math.min(11.0, (startCoord[1] + endCoord[1]) / 2));
+          waypoints = [[midLat, midLng]];
       }
 
       const realRoute = getRealRoute(startCoord, endCoord, waypoints);
