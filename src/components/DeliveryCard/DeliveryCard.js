@@ -51,11 +51,12 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
 
   return (
     <div
+      onClick={onSelect}
       style={{
-        backgroundColor: '#fff',
+        backgroundColor: isSelected ? '#eff6ff' : '#fff',
         borderRadius: responsive.gap,
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        border: '1px solid #e2e8f0',
+        boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.15)' : '0 1px 2px rgba(0,0,0,0.05)',
+        border: isSelected ? '2px solid #3b82f6' : '1px solid #e2e8f0',
         padding: responsive.padding,
         display: 'flex',
         flexDirection: 'column',
@@ -66,6 +67,9 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
         boxSizing: 'border-box',
         overflow: 'hidden',
         wordBreak: 'break-word',
+        cursor: onSelect ? 'pointer' : 'default',
+        transition: 'all 0.2s ease',
+        transform: isSelected ? 'translateY(-1px)' : 'translateY(0)',
       }}
     >
       {/* Header */}
