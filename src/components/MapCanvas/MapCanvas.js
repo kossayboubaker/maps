@@ -574,6 +574,10 @@ const MapCanvas = ({
   useEffect(() => {
     if (!map || !map.getContainer() || !isMapReady) return;
 
+    // Vérifier que la carte est encore montée dans le DOM
+    const container = map.getContainer();
+    if (!container || !container.offsetParent) return;
+
     // Attendre que la carte soit prête
     const timer = setTimeout(() => {
       try {
@@ -818,6 +822,10 @@ const MapCanvas = ({
   useEffect(() => {
     if (!map || !map.getContainer() || !isMapReady) return;
 
+    // Vérifier que la carte est encore montée dans le DOM
+    const container = map.getContainer();
+    if (!container || !container.offsetParent) return;
+
     // Supprimer anciens marqueurs météo
     map.eachLayer((layer) => {
       if (layer.options && layer.options.className === 'weather-marker') {
@@ -920,14 +928,20 @@ const MapCanvas = ({
 
   // Suivi automatique du camion sélectionné
   useEffect(() => {
-    if (followTruck && selectedDelivery && map) {
+    if (followTruck && selectedDelivery && map && map.getContainer()) {
+      const container = map.getContainer();
+      if (!container || !container.offsetParent) return;
       const interval = setInterval(() => {
         const currentTruck = trucksData.find(t => t.truck_id === selectedDelivery.truck_id);
-        if (currentTruck && currentTruck.state === 'En Route') {
-          map.panTo(currentTruck.position, {
-            animate: true,
-            duration: 0.5
-          });
+        if (currentTruck && currentTruck.state === 'En Route' && map.getContainer()) {
+          try {
+            map.panTo(currentTruck.position, {
+              animate: true,
+              duration: 0.5
+            });
+          } catch (error) {
+            console.warn('Erreur panTo:', error);
+          }
         }
       }, 2000);
 
@@ -980,12 +994,18 @@ const MapCanvas = ({
               };
 
               // Suivi automatique si activé et camion sélectionné
-              if (followTruck && selectedDelivery && selectedDelivery.truck_id === truck.truck_id && map) {
+              if (followTruck && selectedDelivery && selectedDelivery.truck_id === truck.truck_id && map && map.getContainer()) {
                 setTimeout(() => {
-                  map.panTo([newLat, newLng], {
-                    animate: true,
-                    duration: 0.8
-                  });
+                  try {
+                    if (map.getContainer()) {
+                      map.panTo([newLat, newLng], {
+                        animate: true,
+                        duration: 0.8
+                      });
+                    }
+                  } catch (error) {
+                    console.warn('Erreur suivi camion:', error);
+                  }
                 }, 100);
               }
 
