@@ -114,20 +114,106 @@ const MapCanvas = ({
     }
   };
 
-  const getRealRoute = async (startCoord, endCoord) => {
+  const getRealRoute = async (startCoord, endCoord, waypoints = []) => {
     try {
-      const url = `https://router.project-osrm.org/route/v1/driving/${startCoord[1]},${startCoord[0]};${endCoord[1]},${endCoord[0]}?overview=full&geometries=geojson&steps=true`;
+      // Construire l'URL avec waypoints si fournis
+      let coordinates = `${startCoord[1]},${startCoord[0]}`;
+
+      // Ajouter les waypoints intermédiaires
+      if (waypoints && waypoints.length > 0) {
+        waypoints.forEach(wp => {
+          coordinates += `;${wp.lng || wp[1]},${wp.lat || wp[0]}`;
+        });
+      }
+
+      coordinates += `;${endCoord[1]},${endCoord[0]}`;
+
+      const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true&continue_straight=false`;
       const response = await fetch(url);
       const data = await response.json();
-      
+
       if (data.routes && data.routes.length > 0) {
-        return data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        const route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        return route;
       }
       return [startCoord, endCoord];
     } catch (error) {
       console.error('Erreur lors de la récupération de la route:', error);
+      // Fallback vers une ligne droite en cas d'échec
       return [startCoord, endCoord];
     }
+  };
+
+  // Générer trajectoires réelles pour chaque camion avec routes vraies
+  const generateRealRoutes = async () => {
+    const routesMap = {};
+
+    for (const truck of trucksData) {
+      try {
+        let startCoord, endCoord, waypoints = [];
+
+        // Définir points de départ et arrivée selon truck_id
+        switch (truck.truck_id) {
+          case 'TN-001':
+            startCoord = [36.8065, 10.1815]; // Tunis
+            endCoord = [34.7406, 10.7603]; // Sfax
+            waypoints = [
+              [36.7456, 10.0654], // Manouba
+              [36.4123, 9.9543], // Beja Sud
+              [35.8765, 9.8321], // Maktar
+            ];
+            break;
+          case 'TN-002':
+            startCoord = [36.8065, 10.1815]; // Tunis
+            endCoord = [35.8256, 10.6369]; // Sousse
+            waypoints = [
+              [36.6543, 10.3654], // Hammam Lif
+              [36.5109, 10.4988], // Grombalia
+            ];
+            break;
+          case 'TN-003':
+            startCoord = [36.4098, 10.1398]; // Ariana
+            endCoord = [35.6786, 10.0963]; // Kairouan
+            waypoints = [
+              [36.1, 10.0], // Mornag
+              [35.9, 9.9], // Zaghouan
+            ];
+            break;
+          case 'TN-004':
+            startCoord = [36.7538, 10.2286]; // La Goulette
+            endCoord = [36.4561, 10.7376]; // Nabeul
+            waypoints = [
+              [36.8, 10.4], // Route côtière
+            ];
+            break;
+          case 'TN-005':
+            startCoord = [34.7406, 10.7603]; // Sfax
+            endCoord = [33.8869, 10.0982]; // Gabes
+            waypoints = [
+              [34.4, 10.6], // Route GP2
+              [34.1, 10.4], // Mahres
+            ];
+            break;
+          default:
+            // Route par défaut
+            startCoord = truck.pickup?.coordinates || truck.position;
+            endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
+        }
+
+        const realRoute = await getRealRoute(startCoord, endCoord, waypoints);
+        routesMap[truck.truck_id] = realRoute;
+
+        // Petit délai pour éviter de surcharger l'API
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+      } catch (error) {
+        console.error(`Erreur pour ${truck.truck_id}:`, error);
+        // Fallback vers route simple
+        routesMap[truck.truck_id] = [truck.position, truck.destinationCoords || truck.position];
+      }
+    }
+
+    return routesMap;
   };
 
   const createTruckIcon = (truck) => {
