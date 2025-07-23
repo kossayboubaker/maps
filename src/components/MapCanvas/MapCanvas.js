@@ -133,58 +133,16 @@ const MapCanvas = ({
       return interpolatedRoute;
     };
 
-    try {
-      // Essayer d'abord l'API OSRM avec un timeout court
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 secondes timeout
-
-      let coordinates = `${startCoord[1]},${startCoord[0]}`;
-
-      if (waypoints && waypoints.length > 0) {
-        waypoints.forEach(wp => {
-          coordinates += `;${wp.lng || wp[1]},${wp.lat || wp[0]}`;
-        });
-      }
-
-      coordinates += `;${endCoord[1]},${endCoord[0]}`;
-
-      const url = `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson&steps=true&continue_straight=false`;
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        mode: 'cors'
-      });
-
-      clearTimeout(timeoutId);
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.routes && data.routes.length > 0) {
-          const route = data.routes[0].geometry.coordinates.map(coord => [coord[1], coord[0]]);
-          return route;
-        }
-      }
-
-      // Si l'API ne répond pas correctement, utiliser la route réaliste
-      return generateRealisticRoute(startCoord, endCoord, waypoints);
-
-    } catch (error) {
-      // En cas d'erreur (réseau, CORS, timeout), utiliser la route réaliste
-      console.warn('API OSRM non disponible, utilisation de routes simulées:', error.message);
-      return generateRealisticRoute(startCoord, endCoord, waypoints);
-    }
+    // Utiliser directement les routes simulées pour éviter les erreurs API
+    return generateRealisticRoute(startCoord, endCoord, waypoints);
   };
 
   // Générer trajectoires réelles pour chaque camion avec routes vraies
-  const generateRealRoutes = async () => {
+  const generateRealRoutes = () => {
     const routesMap = {};
 
-    // Traiter tous les camions en parallèle mais avec limite
-    const promises = trucksData.map(async (truck, index) => {
+    trucksData.forEach(truck => {
       try {
-        // Ajouter un délai échelonné pour éviter de surcharger l'API
-        await new Promise(resolve => setTimeout(resolve, index * 100));
-
         let startCoord, endCoord, waypoints = [];
 
         // Définir points de départ et arrivée selon truck_id
@@ -235,33 +193,17 @@ const MapCanvas = ({
             endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
         }
 
-        const realRoute = await getRealRoute(startCoord, endCoord, waypoints);
-        return { truckId: truck.truck_id, route: realRoute };
+        const realRoute = getRealRoute(startCoord, endCoord, waypoints);
+        routesMap[truck.truck_id] = realRoute;
 
       } catch (error) {
         console.warn(`Erreur route pour ${truck.truck_id}:`, error.message);
         // Fallback vers route simple
-        return {
-          truckId: truck.truck_id,
-          route: [truck.position, truck.destinationCoords || truck.position]
-        };
+        routesMap[truck.truck_id] = [truck.position, truck.destinationCoords || truck.position];
       }
     });
 
-    try {
-      const results = await Promise.allSettled(promises);
-
-      results.forEach(result => {
-        if (result.status === 'fulfilled' && result.value) {
-          routesMap[result.value.truckId] = result.value.route;
-        }
-      });
-
-      return routesMap;
-    } catch (error) {
-      console.error('Erreur lors de la génération des routes:', error);
-      return {};
-    }
+    return routesMap;
   };
 
   const createTruckIcon = (truck) => {
