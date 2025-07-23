@@ -331,10 +331,22 @@ const AlertNotifications = ({
         ) : (
           <div className="alerts-list">
             {getAllAlerts().map((alert, index) => (
-              <div 
+              <div
                 key={alert.id || index}
                 className={`alert-item alert-${alert.severity}`}
                 onClick={() => onAlertClick && onAlertClick(alert)}
+                style={{
+                  position: 'relative',
+                  boxShadow: newAlertIds.has(alert.id)
+                    ? '0 8px 25px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3)'
+                    : undefined,
+                  border: newAlertIds.has(alert.id)
+                    ? '2px solid #3b82f6'
+                    : undefined,
+                  animation: newAlertIds.has(alert.id)
+                    ? 'newAlertGlow 2s ease-in-out infinite'
+                    : undefined
+                }}
               >
                 <div className="alert-icon">
                   {alert.icon}
