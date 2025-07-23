@@ -615,9 +615,11 @@ const MapCanvas = ({
 
       marker.on('click', () => {
         onSelectDelivery(truck);
-        if (followTruck) {
-          map.flyTo(truck.position, Math.max(map.getZoom(), 12), { animate: true, duration: 1 });
-        }
+        // Toujours centrer sur le camion cliqué
+        map.flyTo(truck.position, Math.max(map.getZoom(), 13), {
+          animate: true,
+          duration: 1.2
+        });
       });
 
       // Affichage des routes avec trajectoires réelles
@@ -894,7 +896,24 @@ const MapCanvas = ({
     }
   }, [showWeather, map, weatherLayer]);
 
-  // Animation des camions
+  // Suivi automatique du camion sélectionné
+  useEffect(() => {
+    if (followTruck && selectedDelivery && map) {
+      const interval = setInterval(() => {
+        const currentTruck = trucksData.find(t => t.truck_id === selectedDelivery.truck_id);
+        if (currentTruck && currentTruck.state === 'En Route') {
+          map.panTo(currentTruck.position, {
+            animate: true,
+            duration: 0.5
+          });
+        }
+      }, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [followTruck, selectedDelivery, map, trucksData]);
+
+  // Animation des camions améliorée
   useEffect(() => {
     setTrucksData(deliveries);
 
@@ -927,16 +946,28 @@ const MapCanvas = ({
               let newBearing = Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
               newBearing = (newBearing + 360) % 360;
 
-              const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.2);
-              const newSpeed = Math.max(25, Math.min(85, truck.speed + (Math.random() - 0.5) * 5));
+              const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.5);
+              const newSpeed = Math.max(25, Math.min(85, truck.speed + (Math.random() - 0.5) * 8));
 
-              return {
+              const updatedTruck = {
                 ...truck,
                 position: [newLat, newLng],
                 speed: newSpeed,
                 route_progress: newProgress,
                 bearing: newBearing,
               };
+
+              // Suivi automatique si activé et camion sélectionné
+              if (followTruck && selectedDelivery && selectedDelivery.truck_id === truck.truck_id && map) {
+                setTimeout(() => {
+                  map.panTo([newLat, newLng], {
+                    animate: true,
+                    duration: 0.8
+                  });
+                }, 100);
+              }
+
+              return updatedTruck;
             } catch (error) {
               console.warn(`Erreur animation camion ${truck.truck_id}:`, error);
               return truck; // Retourner le camion inchangé en cas d'erreur
@@ -945,10 +976,10 @@ const MapCanvas = ({
           return truck;
         })
       );
-    }, 4000); // Légèrement plus rapide pour smoother animation
+    }, 3500); // Animation plus fluide
 
     return () => clearInterval(interval);
-  }, [deliveries]);
+  }, [deliveries, followTruck, selectedDelivery, map]);
 
   // Le panneau de contrôle est maintenant géré par AdvancedMapControls - pas besoin ici
 
