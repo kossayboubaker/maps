@@ -151,7 +151,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 xxs:px-3 xs:px-4 sm:px-5 space-y-2 xxs:space-y-3 xs:space-y-4">
+      <div className="flex-1 overflow-y-auto px-2 space-y-1">
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
             <DeliveryCard key={delivery.id} delivery={delivery} />
