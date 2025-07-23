@@ -184,7 +184,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
       </div>
 
       {totalPages > 1 && (
-        <div className="sticky bottom-0 bg-background border-t border-border px-2 xxs:px-3 xs:px-4 sm:px-5 py-2 xxs:py-3 flex items-center justify-between flex-shrink-0">
+        <div className="sticky bottom-0 bg-background border-t border-border px-2 py-1 flex items-center justify-between flex-shrink-0">
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 0}
