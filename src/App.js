@@ -566,7 +566,7 @@ const App = () => {
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
             position: 'absolute',
-            top: '180px', // Glissé vers le bas pour éviter conflit avec MapControlPanel
+            top: '140px', // Position entre header et AdvancedMapControls
             left: isAsideOpen ? '10px' : '10px',
             zIndex: 3000,
             background: 'white',
