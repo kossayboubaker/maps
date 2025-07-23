@@ -29,7 +29,7 @@ const AdvancedMapControls = ({
   return (
     <div style={{
       position: 'fixed',
-      top: '120px', // Glissé vers le bas pour éviter conflit avec header
+      top: '140px', // Position améliorée pour éviter conflit
       right: '20px',
       zIndex: 2000,
       display: 'flex',
