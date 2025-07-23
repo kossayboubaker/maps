@@ -242,41 +242,105 @@ const MapCanvas = ({
   };
 
   const createAlertIcon = (alert) => {
-    const colors = {
-      warning: '#F59E0B',
-      danger: '#EF4444',
-      info: '#3B82F6'
+    const alertStyles = {
+      // Accident - Rouge avec icône d'accident
+      accident: {
+        color: '#EF4444',
+        icon: '⚠️',
+        bgColor: '#FEE2E2',
+        borderColor: '#EF4444'
+      },
+      // Travaux - Orange avec icône de construction
+      construction: {
+        color: '#F59E0B',
+        icon: '🚧',
+        bgColor: '#FEF3C7',
+        borderColor: '#F59E0B'
+      },
+      // Embouteillage - Bleu avec icône de trafic
+      traffic: {
+        color: '#3B82F6',
+        icon: '🚦',
+        bgColor: '#DBEAFE',
+        borderColor: '#3B82F6'
+      },
+      // Météo - Gris avec icône météo
+      weather: {
+        color: '#6B7280',
+        icon: alert.icon || '🌧️',
+        bgColor: '#F3F4F6',
+        borderColor: '#6B7280'
+      },
+      // Police/contrôle - Violet
+      police: {
+        color: '#8B5CF6',
+        icon: '👮',
+        bgColor: '#EDE9FE',
+        borderColor: '#8B5CF6'
+      },
+      // Maintenance - Vert
+      maintenance: {
+        color: '#10B981',
+        icon: '🔧',
+        bgColor: '#D1FAE5',
+        borderColor: '#10B981'
+      }
     };
+
+    const style = alertStyles[alert.type] || alertStyles.accident;
 
     return L.divIcon({
       html: `
         <div style="
-          width: 36px;
-          height: 36px;
-          background: linear-gradient(135deg, ${colors[alert.severity]} 0%, ${colors[alert.severity]}CC 100%);
+          width: 42px;
+          height: 42px;
+          background: ${style.bgColor};
+          border: 3px solid ${style.borderColor};
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 18px;
-          color: white;
-          border: 3px solid white;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-          animation: alertBounce 3s infinite;
-          backdrop-filter: blur(10px);
+          font-size: 20px;
+          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+          animation: alertPulse 2s infinite;
+          position: relative;
         ">
-          ${alert.icon}
+          ${style.icon}
+          <div style="
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: ${style.color};
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            border: 2px solid white;
+          ">
+            !
+          </div>
         </div>
         <style>
-          @keyframes alertBounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+          @keyframes alertPulse {
+            0%, 100% {
+              transform: scale(1);
+              box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            }
+            50% {
+              transform: scale(1.1);
+              box-shadow: 0 6px 20px ${style.color}60;
+            }
           }
         </style>
       `,
       className: '',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
+      iconSize: [42, 42],
+      iconAnchor: [21, 21],
     });
   };
 
