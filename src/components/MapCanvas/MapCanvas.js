@@ -690,32 +690,32 @@ const MapCanvas = ({
   // Animation des camions
   useEffect(() => {
     setTrucksData(deliveries);
-    
+
     const interval = setInterval(() => {
       setTrucksData((prev) =>
         prev.map((truck) => {
-          if (truck.state === 'En Route' && realTrajectories[truck.truck_id]) {
-            const trajectory = realTrajectories[truck.truck_id];
-            const routeIndex = Math.floor((truck.route_progress / 100) * (trajectory.length - 1));
-            const nextIndex = Math.min(routeIndex + 1, trajectory.length - 1);
-            const progressBetweenPoints = ((truck.route_progress / 100) * (trajectory.length - 1)) % 1;
+          if (truck.state === 'En Route' && truck.realRoute && truck.realRoute.length > 1) {
+            // Utiliser la vraie route pour l'animation
+            const routeIndex = Math.floor((truck.route_progress / 100) * (truck.realRoute.length - 1));
+            const nextIndex = Math.min(routeIndex + 1, truck.realRoute.length - 1);
+            const progressBetweenPoints = ((truck.route_progress / 100) * (truck.realRoute.length - 1)) % 1;
 
-            const newLat = trajectory[routeIndex].lat + 
-              (trajectory[nextIndex].lat - trajectory[routeIndex].lat) * progressBetweenPoints;
-            const newLng = trajectory[routeIndex].lng + 
-              (trajectory[nextIndex].lng - trajectory[routeIndex].lng) * progressBetweenPoints;
+            const currentPoint = truck.realRoute[routeIndex];
+            const nextPoint = truck.realRoute[nextIndex];
 
-            // Calcul de l'orientation
-            const y = Math.sin(trajectory[nextIndex].lng - trajectory[routeIndex].lng) * 
-              Math.cos(trajectory[nextIndex].lat);
-            const x = Math.cos(trajectory[routeIndex].lat) * Math.sin(trajectory[nextIndex].lat) - 
-              Math.sin(trajectory[routeIndex].lat) * Math.cos(trajectory[nextIndex].lat) * 
-              Math.cos(trajectory[nextIndex].lng - trajectory[routeIndex].lng);
-            let newBearing = Math.atan2(y, x) * (180 / Math.PI);
+            const newLat = currentPoint[0] +
+              (nextPoint[0] - currentPoint[0]) * progressBetweenPoints;
+            const newLng = currentPoint[1] +
+              (nextPoint[1] - currentPoint[1]) * progressBetweenPoints;
+
+            // Calcul de l'orientation basé sur la vraie route
+            const deltaLat = nextPoint[0] - currentPoint[0];
+            const deltaLng = nextPoint[1] - currentPoint[1];
+            let newBearing = Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
             newBearing = (newBearing + 360) % 360;
 
-            const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.5);
-            const newSpeed = Math.max(20, Math.min(90, truck.speed + (Math.random() - 0.5) * 6));
+            const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.2);
+            const newSpeed = Math.max(25, Math.min(85, truck.speed + (Math.random() - 0.5) * 5));
 
             return {
               ...truck,
@@ -728,7 +728,7 @@ const MapCanvas = ({
           return truck;
         })
       );
-    }, 5000);
+    }, 4000); // Légèrement plus rapide pour smoother animation
 
     return () => clearInterval(interval);
   }, [deliveries]);
