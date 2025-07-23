@@ -333,6 +333,7 @@ const App = () => {
 
   const handleCloseAlert = (alertId) => {
     setAlerts(prev => prev.filter(alert => alert.id !== alertId));
+    setDeletedAlerts(prev => [...prev, alertId]);
   };
 
   const handleToggleAlertPanel = () => {
