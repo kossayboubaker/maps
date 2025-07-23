@@ -21,6 +21,7 @@ const MapCanvas = ({
   const [weatherLayer, setWeatherLayer] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapRef = useRef(null);
 
 
@@ -459,11 +460,16 @@ const MapCanvas = ({
 
         // Attendre que la carte soit prête avant d'ajouter les layers
         leafletMap.whenReady(() => {
-          tileLayers.standard.addTo(leafletMap);
-          setMap(leafletMap);
+          try {
+            tileLayers.standard.addTo(leafletMap);
+            setMap(leafletMap);
+            setIsMapReady(true);
 
-          if (onMapReady) {
-            onMapReady(leafletMap);
+            if (onMapReady) {
+              onMapReady(leafletMap);
+            }
+          } catch (error) {
+            console.error('Erreur ajout layer initial:', error);
           }
         });
 
@@ -527,7 +533,7 @@ const MapCanvas = ({
 
   // Affichage des camions et alertes
   useEffect(() => {
-    if (!map || !map.getContainer()) return;
+    if (!map || !map.getContainer() || !isMapReady) return;
 
     // Attendre que la carte soit prête
     const timer = setTimeout(() => {
@@ -771,7 +777,7 @@ const MapCanvas = ({
 
   // Couche météo améliorée avec icônes visibles
   useEffect(() => {
-    if (!map || !map.getContainer()) return;
+    if (!map || !map.getContainer() || !isMapReady) return;
 
     // Supprimer anciens marqueurs météo
     map.eachLayer((layer) => {
@@ -968,6 +974,37 @@ const MapCanvas = ({
       overflow: 'hidden',
       background: '#f1f5f9'
     }}>
+      {!isMapReady && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'rgba(255,255,255,0.9)',
+          zIndex: 1000
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              border: '6px solid #e5e7eb',
+              borderTop: '6px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 20px'
+            }} />
+            <p style={{
+              color: '#6b7280',
+              fontSize: '18px',
+              fontWeight: '600',
+              margin: 0
+            }}>
+              Initialisation de la carte...
+            </p>
+          </div>
+        </div>
+      )}
       <div
         id="map-container"
         ref={mapRef}
@@ -976,7 +1013,9 @@ const MapCanvas = ({
           width: '100%',
           minHeight: '400px',
           borderRadius: '0',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          opacity: isMapReady ? 1 : 0,
+          transition: 'opacity 0.3s ease'
         }}
       />
 
