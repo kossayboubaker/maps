@@ -53,25 +53,7 @@ const MapCanvas = ({
       { lat: 36.3098, lng: 10.6989, name: 'Hammamet Nord', type: 'coastal_city' },
       { lat: 35.8256, lng: 10.6369, name: 'Sousse Port', type: 'port_city' },
     ],
-    'TN-003': [
-      { lat: 36.4098, lng: 10.1398, name: 'Ariana Centre', type: 'city' },
-      { lat: 36.3, lng: 10.1, name: 'Route GP7', type: 'highway' },
-      { lat: 36.1, lng: 10.0, name: 'Mornag', type: 'town' },
-      { lat: 35.9, lng: 9.9, name: 'Zaghouan', type: 'city' },
-      { lat: 35.6786, lng: 10.0963, name: 'Kairouan Centre', type: 'city' }
-    ],
-    'TN-004': [
-      { lat: 36.7538, lng: 10.2286, name: 'La Goulette Port', type: 'port' },
-      { lat: 36.8, lng: 10.4, name: 'Route côtière', type: 'highway' },
-      { lat: 36.6, lng: 10.6, name: 'Korba', type: 'town' },
-      { lat: 36.4561, lng: 10.7376, name: 'Nabeul Industrial', type: 'city' }
-    ],
-    'TN-005': [
-      { lat: 34.7406, lng: 10.7603, name: 'Sfax Centre', type: 'city' },
-      { lat: 34.4, lng: 10.6, name: 'Route GP2', type: 'highway' },
-      { lat: 34.1, lng: 10.4, name: 'Mahres', type: 'town' },
-      { lat: 33.8869, lng: 10.0982, name: 'Gabes Centre', type: 'city' }
-    ]
+    
   };
 
   const configureLeafletIcons = () => {
