@@ -769,8 +769,8 @@ const MapCanvas = ({
         { name: 'Bizerte', lat: 37.2744, lng: 9.8739 }
       ];
 
-      weatherCities.forEach(async (city) => {
-        const weather = await fetchWeatherData(city.lat, city.lng, city.name);
+      weatherCities.forEach((city) => {
+        const weather = generateWeatherData(city.lat, city.lng, city.name);
         if (weather) {
           const weatherMarker = L.marker([city.lat, city.lng], {
             icon: createWeatherIcon(weather),
