@@ -522,7 +522,7 @@ const App = () => {
                   fontSize: '10px',
                   color: '#9ca3af'
                 }}>
-                  <span>���� {alert.affectedRoutes?.join(', ')}</span>
+                  <span>🚛 {alert.affectedRoutes?.join(', ')}</span>
                   <span>{new Date(alert.timestamp).toLocaleTimeString('fr-FR', {
                     hour: '2-digit',
                     minute: '2-digit'
@@ -557,6 +557,9 @@ const App = () => {
             mapStyle={mapStyle}
             onMapReady={setMapInstance}
             showAlerts={showAlerts}
+            showRoutes={showRoutes}
+            showWeather={showWeather}
+            followTruck={followTruck}
           />
         </main>
         <button
