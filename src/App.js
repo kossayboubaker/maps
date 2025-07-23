@@ -255,6 +255,9 @@ const App = () => {
   const [showAlerts, setShowAlerts] = useState(false);
   const [alerts, setAlerts] = useState(mockAlerts);
   const [mapInstance, setMapInstance] = useState(null);
+  const [showRoutes, setShowRoutes] = useState(true);
+  const [showWeather, setShowWeather] = useState(false);
+  const [followTruck, setFollowTruck] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
