@@ -806,8 +806,9 @@ const MapCanvas = ({
     return () => clearInterval(interval);
   }, [deliveries]);
 
-  // Panneau de contrôle
+  // Le panneau de contrôle est maintenant géré par AdvancedMapControls
   const ControlPanel = () => {
+    return null; // Panneau désactivé
     if (!isControlPanelOpen) {
       return (
         <button
