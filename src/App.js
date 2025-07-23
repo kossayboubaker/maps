@@ -3,6 +3,7 @@ import Header from './components/Header/Header.js';
 import DeliveryList from './components/DeliveryList/DeliveryList.js';
 import MapCanvas from './components/MapCanvas/MapCanvas.js';
 import AdvancedMapControls from './components/AdvancedMapControls/AdvancedMapControls.js';
+import AlertNotifications from './components/AlertNotifications/AlertNotifications.js';
 
 const mockTrucks = [
   {
@@ -258,6 +259,7 @@ const App = () => {
   const [showRoutes, setShowRoutes] = useState(true);
   const [showWeather, setShowWeather] = useState(false);
   const [followTruck, setFollowTruck] = useState(false);
+  const [isAlertsOpen, setIsAlertsOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -277,6 +279,14 @@ const App = () => {
 
   const handleDeliverySelect = (delivery) => {
     setSelectedDelivery(delivery);
+
+    // Focus sur le camion sélectionné dans la carte
+    if (mapInstance && delivery) {
+      mapInstance.flyTo(delivery.position, Math.max(mapInstance.getZoom(), 12), {
+        animate: true,
+        duration: 1.5
+      });
+    }
   };
 
   const handleMapStyleChange = (style) => {
@@ -309,6 +319,23 @@ const App = () => {
 
   const handleToggleFollowTruck = (follow) => {
     setFollowTruck(follow);
+  };
+
+  const handleAlertClick = (alert) => {
+    if (mapInstance) {
+      mapInstance.flyTo(alert.position, 13, {
+        animate: true,
+        duration: 1
+      });
+    }
+  };
+
+  const handleCloseAlert = (alertId) => {
+    setAlerts(prev => prev.filter(alert => alert.id !== alertId));
+  };
+
+  const handleToggleAlertPanel = () => {
+    setIsAlertsOpen(!isAlertsOpen);
   };
 
   // Simuler des mises à jour d'alertes en temps réel
@@ -375,164 +402,15 @@ const App = () => {
         onToggleFollowTruck={handleToggleFollowTruck}
       />
 
-      {/* Panneau de notifications amélioré - glissé vers le bas */}
-      {showAlerts && alerts.length > 0 && (
-        <div style={{
-          position: 'fixed',
-          top: '160px', // Plus bas pour éviter conflit avec MapControlPanel
-          right: '20px',
-          zIndex: 2000,
-          width: '380px',
-          maxWidth: '90vw',
-          maxHeight: '500px',
-          background: 'rgba(255, 255, 255, 0.98)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '20px',
-          boxShadow: '0 25px 80px rgba(0,0,0,0.15)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          overflow: 'hidden',
-          animation: 'slideInRight 0.5s ease-out'
-        }}>
-          <div style={{
-            padding: '20px 24px 16px',
-            borderBottom: '1px solid rgba(0,0,0,0.06)',
-            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-            color: 'white'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
-              <h3 style={{
-                margin: 0,
-                fontSize: '18px',
-                fontWeight: '700',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                🚨 Alertes Actives ({alerts.length})
-              </h3>
-              <button
-                onClick={() => setShowAlerts(false)}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: '32px',
-                  height: '32px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  color: 'white',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-          <div style={{
-            padding: '16px 24px',
-            overflowY: 'auto',
-            maxHeight: '400px'
-          }}>
-            {alerts.map((alert, index) => (
-              <div key={alert.id} style={{
-                padding: '16px',
-                margin: '0 0 12px 0',
-                background: alert.severity === 'danger'
-                  ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
-                  : alert.severity === 'warning'
-                  ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'
-                  : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
-                borderRadius: '12px',
-                border: `2px solid ${
-                  alert.severity === 'danger' ? '#fecaca' :
-                  alert.severity === 'warning' ? '#fde68a' : '#bfdbfe'
-                }`,
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = 'none';
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '8px'
-                }}>
-                  <span style={{ fontSize: '24px' }}>{alert.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{
-                      fontSize: '14px',
-                      fontWeight: '700',
-                      color: '#1f2937',
-                      marginBottom: '2px'
-                    }}>
-                      {alert.title}
-                    </div>
-                    <div style={{
-                      fontSize: '12px',
-                      color: '#6b7280'
-                    }}>
-                      📍 {alert.location}
-                    </div>
-                  </div>
-                  <div style={{
-                    background: alert.severity === 'danger' ? '#ef4444' :
-                              alert.severity === 'warning' ? '#f59e0b' : '#3b82f6',
-                    color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    fontWeight: '600'
-                  }}>
-                    +{alert.delay}min
-                  </div>
-                </div>
-                <div style={{
-                  fontSize: '12px',
-                  color: '#4b5563',
-                  lineHeight: '1.4',
-                  marginBottom: '8px'
-                }}>
-                  {alert.description}
-                </div>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  fontSize: '10px',
-                  color: '#9ca3af'
-                }}>
-                  <span>🚛 {alert.affectedRoutes?.join(', ')}</span>
-                  <span>{new Date(alert.timestamp).toLocaleTimeString('fr-FR', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Nouveau système AlertNotifications intelligent */}
+      <AlertNotifications
+        alerts={alerts}
+        trucks={mockTrucks}
+        onAlertClick={handleAlertClick}
+        onCloseAlert={handleCloseAlert}
+        isOpen={isAlertsOpen}
+        onToggle={handleToggleAlertPanel}
+      />
 
       <div className="flex h-[calc(100vh-60px)] w-full">
         <aside
