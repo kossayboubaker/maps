@@ -23,36 +23,7 @@ const MapCanvas = ({
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const mapRef = useRef(null);
 
-  // Configuration des trajectoires prédéfinies pour chaque camion
-  const predefinedRoutes = {
-    'TN-001': [
-      { lat: 36.8065, lng: 10.1815, name: 'Tunis Centre', type: 'city' },
-      { lat: 36.8128, lng: 10.1658, name: 'Lac 1', type: 'district' },
-      { lat: 36.8342, lng: 10.1456, name: 'Ariana Ville', type: 'city' },
-      { lat: 36.8567, lng: 10.1234, name: 'Raoued', type: 'suburb' },
-      { lat: 36.8234, lng: 10.0987, name: 'Autoroute A4', type: 'highway' },
-      { lat: 36.7456, lng: 10.0654, name: 'Manouba', type: 'city' },
-      { lat: 36.6789, lng: 10.0321, name: 'Jedaida', type: 'town' },
-      { lat: 36.5432, lng: 9.9876, name: 'Testour', type: 'town' },
-      { lat: 36.4123, lng: 9.9543, name: 'Beja Sud', type: 'city' },
-      { lat: 36.2876, lng: 9.9210, name: 'Medjez el Bab', type: 'town' },
-      { lat: 35.8765, lng: 9.8321, name: 'Maktar', type: 'town' },
-      { lat: 35.7432, lng: 9.7998, name: 'Siliana', type: 'city' },
-      { lat: 34.7406, lng: 10.7603, name: 'Sfax Centre', type: 'city' },
-    ],
-    'TN-002': [
-      { lat: 36.8065, lng: 10.1815, name: 'Tunis Centre', type: 'city' },
-      { lat: 36.7234, lng: 10.2987, name: 'Ben Arous', type: 'city' },
-      { lat: 36.6543, lng: 10.3654, name: 'Hammam Lif', type: 'coastal_city' },
-      { lat: 36.5876, lng: 10.4321, name: 'Soliman', type: 'town' },
-      { lat: 36.5109, lng: 10.4988, name: 'Grombalia', type: 'town' },
-      { lat: 36.4432, lng: 10.5655, name: 'Bou Argoub', type: 'village' },
-      { lat: 36.3765, lng: 10.6322, name: 'Nabeul Sud', type: 'city' },
-      { lat: 36.3098, lng: 10.6989, name: 'Hammamet Nord', type: 'coastal_city' },
-      { lat: 35.8256, lng: 10.6369, name: 'Sousse Port', type: 'port_city' },
-    ],
-    
-  };
+
 
   const configureLeafletIcons = () => {
     delete L.Icon.Default.prototype._getIconUrl;
