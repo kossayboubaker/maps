@@ -18,14 +18,13 @@ const MapCanvas = ({
 }) => {
   const [map, setMap] = useState(null);
   const [trucksData, setTrucksData] = useState(deliveries);
-  const [weatherData, setWeatherData] = useState({});
   const [weatherLayer, setWeatherLayer] = useState(null);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const mapRef = useRef(null);
 
-  // Trajectoires réelles avec uniquement des routes terrestres
-  const realTrajectories = {
+  // Configuration des trajectoires prédéfinies pour chaque camion
+  const predefinedRoutes = {
     'TN-001': [
       { lat: 36.8065, lng: 10.1815, name: 'Tunis Centre', type: 'city' },
       { lat: 36.8128, lng: 10.1658, name: 'Lac 1', type: 'district' },
@@ -89,11 +88,6 @@ const MapCanvas = ({
       pressure: 1010 + Math.floor(Math.random() * 20),
       feelsLike: temp + Math.floor(Math.random() * 4) - 2
     };
-
-    setWeatherData(prev => ({
-      ...prev,
-      [locationName]: weatherInfo
-    }));
 
     return weatherInfo;
   };
@@ -517,14 +511,14 @@ const MapCanvas = ({
     return () => {
       leafletMap.remove();
     };
-  }, []);
+  }, [generateRealRoutes, onMapReady]);
 
   // Mise à jour du style de carte
   useEffect(() => {
     if (map) {
       handleMapStyleChange(mapStyle);
     }
-  }, [mapStyle, map]);
+  }, [mapStyle, map, handleMapStyleChange]);
 
   // Affichage des camions et alertes
   useEffect(() => {
@@ -573,7 +567,7 @@ const MapCanvas = ({
                           truck.state === 'En Route' ? '#10B981' : '#8B5CF6';
 
         // Créer une polyligne avec style amélioré
-        const routeLine = L.polyline(truck.realRoute, {
+        L.polyline(truck.realRoute, {
           color: routeColor,
           weight: selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? 6 : 4,
           opacity: 0.8,
@@ -678,7 +672,7 @@ const MapCanvas = ({
       });
     }
 
-  }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts]);
+  }, [map, trucksData, selectedDelivery, showRoutes, followTruck, alerts, showAlerts, createTruckIcon, onSelectDelivery]);
 
   // Créer marqueurs météo
   const createWeatherIcon = (weather) => {
