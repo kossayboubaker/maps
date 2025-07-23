@@ -9,6 +9,7 @@ const MapCanvas = ({
   selectedDelivery,
   onSelectDelivery,
   alerts = [],
+  allAlerts = [], // Toutes les alertes (statiques + générées)
   mapStyle = 'standard',
   onMapReady,
   showAlerts = false,
