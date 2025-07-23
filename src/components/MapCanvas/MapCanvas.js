@@ -4,17 +4,17 @@ import 'leaflet/dist/leaflet.css';
 
 const WEATHER_API_KEY = '4437791bbdc183036e4e04dc15c92cb8';
 
-const MapCanvas = ({ 
-  trucks = [], 
-  selectedTruck, 
-  onSelectTruck, 
-  alerts = [], 
+const MapCanvas = ({
+  deliveries = [],
+  selectedDelivery,
+  onSelectDelivery,
+  alerts = [],
   mapStyle = 'standard',
   onMapReady,
-  showAlerts = false 
+  showAlerts = false
 }) => {
   const [map, setMap] = useState(null);
-  const [trucksData, setTrucksData] = useState(trucks);
+  const [trucksData, setTrucksData] = useState(deliveries);
   const [showRoutes, setShowRoutes] = useState(true);
   const [followTruck, setFollowTruck] = useState(false);
   const [isControlPanelOpen, setIsControlPanelOpen] = useState(true);
