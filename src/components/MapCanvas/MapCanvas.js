@@ -131,11 +131,11 @@ const MapCanvas = ({
   };
 
   const createTruckIcon = (truck) => {
-    const isSelected = selectedTruck && selectedTruck.truck_id === truck.truck_id;
+    const isSelected = selectedDelivery && selectedDelivery.truck_id === truck.truck_id;
     const speed = truck.speed || 0;
     const state = truck.state || 'Unknown';
     const bearing = truck.bearing || 0;
-    const hasAlerts = alerts.filter(alert => 
+    const hasAlerts = alerts.filter(alert =>
       alert.affectedRoutes && alert.affectedRoutes.includes(truck.truck_id)
     ).length > 0;
 
