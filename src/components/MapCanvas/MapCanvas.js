@@ -493,7 +493,7 @@ const MapCanvas = ({
 
   // Affichage des camions et alertes
   useEffect(() => {
-    if (!map) return;
+    if (!map || !map.getContainer()) return;
 
     // Nettoyer les marqueurs existants
     map.eachLayer((layer) => {
