@@ -357,8 +357,8 @@ const App = () => {
     <div className={`min-h-screen ${isAsideOpen ? 'bg-background' : 'bg-white'} overflow-hidden`}>
       <Header />
 
-      {/* MapControlPanel selon capture 3 */}
-      <MapControlPanel
+      {/* AdvancedMapControls selon votre image */}
+      <AdvancedMapControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onMapStyleChange={handleMapStyleChange}
@@ -366,6 +366,13 @@ const App = () => {
         alertsCount={alerts.length}
         onToggleAlerts={handleToggleAlerts}
         showAlerts={showAlerts}
+        selectedTruck={selectedDelivery}
+        showRoutes={showRoutes}
+        onToggleRoutes={handleToggleRoutes}
+        showWeather={showWeather}
+        onToggleWeather={handleToggleWeather}
+        followTruck={followTruck}
+        onToggleFollowTruck={handleToggleFollowTruck}
       />
 
       {/* Panneau de notifications amélioré - glissé vers le bas */}
@@ -515,7 +522,7 @@ const App = () => {
                   fontSize: '10px',
                   color: '#9ca3af'
                 }}>
-                  <span>🚛 {alert.affectedRoutes?.join(', ')}</span>
+                  <span>���� {alert.affectedRoutes?.join(', ')}</span>
                   <span>{new Date(alert.timestamp).toLocaleTimeString('fr-FR', {
                     hour: '2-digit',
                     minute: '2-digit'
