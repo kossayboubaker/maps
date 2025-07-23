@@ -777,35 +777,45 @@ const MapCanvas = ({
       setTrucksData((prev) =>
         prev.map((truck) => {
           if (truck.state === 'En Route' && truck.realRoute && truck.realRoute.length > 1) {
-            // Utiliser la vraie route pour l'animation
-            const routeIndex = Math.floor((truck.route_progress / 100) * (truck.realRoute.length - 1));
-            const nextIndex = Math.min(routeIndex + 1, truck.realRoute.length - 1);
-            const progressBetweenPoints = ((truck.route_progress / 100) * (truck.realRoute.length - 1)) % 1;
+            try {
+              // Utiliser la vraie route pour l'animation
+              const routeIndex = Math.floor((truck.route_progress / 100) * (truck.realRoute.length - 1));
+              const nextIndex = Math.min(routeIndex + 1, truck.realRoute.length - 1);
+              const progressBetweenPoints = ((truck.route_progress / 100) * (truck.realRoute.length - 1)) % 1;
 
-            const currentPoint = truck.realRoute[routeIndex];
-            const nextPoint = truck.realRoute[nextIndex];
+              const currentPoint = truck.realRoute[routeIndex];
+              const nextPoint = truck.realRoute[nextIndex];
 
-            const newLat = currentPoint[0] +
-              (nextPoint[0] - currentPoint[0]) * progressBetweenPoints;
-            const newLng = currentPoint[1] +
-              (nextPoint[1] - currentPoint[1]) * progressBetweenPoints;
+              // Vérifier que les points sont valides
+              if (!currentPoint || !nextPoint || !Array.isArray(currentPoint) || !Array.isArray(nextPoint)) {
+                return truck; // Retourner le camion inchangé si les données sont invalides
+              }
 
-            // Calcul de l'orientation basé sur la vraie route
-            const deltaLat = nextPoint[0] - currentPoint[0];
-            const deltaLng = nextPoint[1] - currentPoint[1];
-            let newBearing = Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
-            newBearing = (newBearing + 360) % 360;
+              const newLat = currentPoint[0] +
+                (nextPoint[0] - currentPoint[0]) * progressBetweenPoints;
+              const newLng = currentPoint[1] +
+                (nextPoint[1] - currentPoint[1]) * progressBetweenPoints;
 
-            const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.2);
-            const newSpeed = Math.max(25, Math.min(85, truck.speed + (Math.random() - 0.5) * 5));
+              // Calcul de l'orientation basé sur la vraie route
+              const deltaLat = nextPoint[0] - currentPoint[0];
+              const deltaLng = nextPoint[1] - currentPoint[1];
+              let newBearing = Math.atan2(deltaLng, deltaLat) * (180 / Math.PI);
+              newBearing = (newBearing + 360) % 360;
 
-            return {
-              ...truck,
-              position: [newLat, newLng],
-              speed: newSpeed,
-              route_progress: newProgress,
-              bearing: newBearing,
-            };
+              const newProgress = Math.min(100, truck.route_progress + Math.random() * 1.2);
+              const newSpeed = Math.max(25, Math.min(85, truck.speed + (Math.random() - 0.5) * 5));
+
+              return {
+                ...truck,
+                position: [newLat, newLng],
+                speed: newSpeed,
+                route_progress: newProgress,
+                bearing: newBearing,
+              };
+            } catch (error) {
+              console.warn(`Erreur animation camion ${truck.truck_id}:`, error);
+              return truck; // Retourner le camion inchangé en cas d'erreur
+            }
           }
           return truck;
         })
