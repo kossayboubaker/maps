@@ -340,7 +340,7 @@ const App = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#f8fafc',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
       overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column'
@@ -354,6 +354,166 @@ const App = () => {
         onToggleAlerts={handleToggleAlerts}
         showAlerts={showAlerts}
       />
+
+      {/* Panneau de notifications amélioré */}
+      {showAlerts && alerts.length > 0 && (
+        <div style={{
+          position: 'fixed',
+          top: '120px', // Glissé vers le bas
+          right: '20px',
+          zIndex: 2000,
+          width: '380px',
+          maxWidth: '90vw',
+          maxHeight: '500px',
+          background: 'rgba(255, 255, 255, 0.98)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px',
+          boxShadow: '0 25px 80px rgba(0,0,0,0.15)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          overflow: 'hidden',
+          animation: 'slideInRight 0.5s ease-out'
+        }}>
+          <div style={{
+            padding: '20px 24px 16px',
+            borderBottom: '1px solid rgba(0,0,0,0.06)',
+            background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+            color: 'white'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🚨 Alertes Actives ({alerts.length})
+              </h3>
+              <button
+                onClick={() => setShowAlerts(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+          <div style={{
+            padding: '16px 24px',
+            overflowY: 'auto',
+            maxHeight: '400px'
+          }}>
+            {alerts.map((alert, index) => (
+              <div key={alert.id} style={{
+                padding: '16px',
+                margin: '0 0 12px 0',
+                background: alert.severity === 'danger'
+                  ? 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)'
+                  : alert.severity === 'warning'
+                  ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)'
+                  : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)',
+                borderRadius: '12px',
+                border: `2px solid ${
+                  alert.severity === 'danger' ? '#fecaca' :
+                  alert.severity === 'warning' ? '#fde68a' : '#bfdbfe'
+                }`,
+                position: 'relative',
+                overflow: 'hidden',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = 'none';
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '8px'
+                }}>
+                  <span style={{ fontSize: '24px' }}>{alert.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{
+                      fontSize: '14px',
+                      fontWeight: '700',
+                      color: '#1f2937',
+                      marginBottom: '2px'
+                    }}>
+                      {alert.title}
+                    </div>
+                    <div style={{
+                      fontSize: '12px',
+                      color: '#6b7280'
+                    }}>
+                      📍 {alert.location}
+                    </div>
+                  </div>
+                  <div style={{
+                    background: alert.severity === 'danger' ? '#ef4444' :
+                              alert.severity === 'warning' ? '#f59e0b' : '#3b82f6',
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontWeight: '600'
+                  }}>
+                    +{alert.delay}min
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#4b5563',
+                  lineHeight: '1.4',
+                  marginBottom: '8px'
+                }}>
+                  {alert.description}
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '10px',
+                  color: '#9ca3af'
+                }}>
+                  <span>🚛 {alert.affectedRoutes?.join(', ')}</span>
+                  <span>{new Date(alert.timestamp).toLocaleTimeString('fr-FR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div style={{
         display: 'flex',
         height: 'calc(100vh - 76px)',
@@ -361,16 +521,31 @@ const App = () => {
       }}>
         <aside
           style={{
-            transition: 'all 0.3s ease',
-            width: isAsideOpen ? '400px' : '0',
-            maxWidth: isAsideOpen ? '400px' : '0',
-            background: '#ffffff',
-            borderRight: '2px solid rgba(59, 130, 246, 0.1)',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            width: isAsideOpen ? '420px' : '0',
+            maxWidth: isAsideOpen ? '420px' : '0',
+            background: 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
+            borderRight: '3px solid rgba(59, 130, 246, 0.15)',
             flexShrink: 0,
             overflow: 'hidden',
-            boxShadow: isAsideOpen ? '4px 0 20px rgba(0, 0, 0, 0.1)' : 'none'
+            boxShadow: isAsideOpen ? '8px 0 40px rgba(0, 0, 0, 0.12)' : 'none',
+            position: 'relative'
           }}
         >
+          {/* Effet de lumière sur le bord */}
+          {isAsideOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '2px',
+              height: '100%',
+              background: 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 50%, #3b82f6 100%)',
+              opacity: 0.6,
+              animation: 'glow 3s ease-in-out infinite alternate'
+            }} />
+          )}
+
           <TruckList
             trucks={mockTrucks}
             searchTerm={searchTerm}
@@ -380,12 +555,14 @@ const App = () => {
             alerts={alerts}
           />
         </aside>
+
         <main
           style={{
             flex: 1,
             minWidth: 0,
             overflow: 'hidden',
-            position: 'relative'
+            position: 'relative',
+            background: '#f1f5f9'
           }}
         >
           <MapCanvas
@@ -398,55 +575,82 @@ const App = () => {
             showAlerts={showAlerts}
           />
         </main>
+
         <button
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
             position: 'absolute',
-            top: '90px',
-            left: isAsideOpen ? '410px' : '10px',
+            top: '100px',
+            left: isAsideOpen ? '430px' : '20px',
             zIndex: 3000,
             background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-            border: 'none',
+            border: '3px solid rgba(255, 255, 255, 0.8)',
             borderRadius: '50%',
-            width: '48px',
-            height: '48px',
+            width: '56px',
+            height: '56px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(59, 130, 246, 0.4)',
+            boxShadow: '0 8px 32px rgba(59, 130, 246, 0.4)',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
+            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
             touchAction: 'manipulation',
             color: 'white'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'scale(1.1)';
-            e.target.style.boxShadow = '0 6px 25px rgba(59, 130, 246, 0.6)';
+            e.target.style.transform = 'scale(1.15) rotate(5deg)';
+            e.target.style.boxShadow = '0 12px 40px rgba(59, 130, 246, 0.6)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'scale(1)';
-            e.target.style.boxShadow = '0 4px 20px rgba(59, 130, 246, 0.4)';
+            e.target.style.transform = 'scale(1) rotate(0deg)';
+            e.target.style.boxShadow = '0 8px 32px rgba(59, 130, 246, 0.4)';
           }}
           title={isAsideOpen ? 'Masquer le panneau' : 'Afficher le panneau'}
         >
           <svg
-            width="24"
-            height="24"
+            width="28"
+            height="28"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2.5"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             style={{
               transform: isAsideOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: 'transform 0.3s ease'
+              transition: 'transform 0.4s ease'
             }}
           >
            <path d="M9 18l6-6-6-6" />
           </svg>
         </button>
       </div>
+
+      <style>
+        {`
+          @keyframes slideInRight {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes glow {
+            from {
+              opacity: 0.4;
+              box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            }
+            to {
+              opacity: 0.8;
+              box-shadow: 0 0 30px rgba(59, 130, 246, 0.8);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
