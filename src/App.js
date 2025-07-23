@@ -422,6 +422,7 @@ const App = () => {
             onSearchChange={handleSearchChange}
             onSelectDelivery={handleDeliverySelect}
             selectedDelivery={selectedDelivery}
+            alerts={alerts}
           />
         </aside>
         <main
@@ -443,24 +444,33 @@ const App = () => {
         <button
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
-            position: 'absolute',
-            top: '140px', // Position entre header et AdvancedMapControls
+            position: 'fixed',
+            top: '80px', // Position améliorée
             left: isAsideOpen ? '10px' : '10px',
             zIndex: 3000,
-            background: 'white',
-            border: 'none',
+            background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+            border: '2px solid rgba(255,255,255,0.3)',
             borderRadius: '50%',
-            width: '35px',
-            height: '35px',
+            width: '44px',
+            height: '44px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+            backdropFilter: 'blur(10px)',
             cursor: 'pointer',
-            transition: 'left 0.3s ease, transform 0.3s ease',
+            transition: 'all 0.3s ease',
             touchAction: 'manipulation',
           }}
           className={`${isAsideOpen ? 'transform rotate-180' : ''}`}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'scale(1.1) ' + (isAsideOpen ? 'rotate(180deg)' : '');
+            e.target.style.boxShadow = '0 12px 35px rgba(0,0,0,0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'scale(1) ' + (isAsideOpen ? 'rotate(180deg)' : '');
+            e.target.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+          }}
         >
           <svg
             width="20"
