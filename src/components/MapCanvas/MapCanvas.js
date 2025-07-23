@@ -466,12 +466,12 @@ const MapCanvas = ({
         const trajectory = realTrajectories[truck.truck_id];
         const routeCoords = trajectory.map(point => [point.lat, point.lng]);
         
-        const routeColor = selectedTruck && selectedTruck.truck_id === truck.truck_id ? '#3B82F6' : 
+        const routeColor = selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? '#3B82F6' :
                           truck.state === 'En Route' ? '#10B981' : '#8B5CF6';
 
         L.polyline(routeCoords, {
           color: routeColor,
-          weight: selectedTruck && selectedTruck.truck_id === truck.truck_id ? 8 : 5,
+          weight: selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? 8 : 5,
           opacity: 0.8,
           lineCap: 'round',
           lineJoin: 'round',
@@ -479,7 +479,7 @@ const MapCanvas = ({
         }).addTo(map);
 
         // Points d'étape pour le camion sélectionné
-        if (selectedTruck && selectedTruck.truck_id === truck.truck_id) {
+        if (selectedDelivery && selectedDelivery.truck_id === truck.truck_id) {
           trajectory.forEach((point, index) => {
             const isStart = index === 0;
             const isEnd = index === trajectory.length - 1;
