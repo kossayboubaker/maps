@@ -82,67 +82,63 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange }) => {
           />
         </div>
 
-        {/* Statistiques selon capture 2 */}
+        {/* Statistiques optimisées - tailles réduites */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(70px, 1fr))',
-          gap: '8px',
-          marginBottom: '16px'
+          gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
+          gap: '4px',
+          marginBottom: '8px'
         }}>
           <div style={{
             background: '#10b981',
-            borderRadius: '12px',
-            padding: '12px 8px',
+            borderRadius: '8px',
+            padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
-            <div style={{ fontSize: '11px', marginTop: '2px' }}>Camions</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
+            <div style={{ fontSize: '9px', marginTop: '1px' }}>Camions</div>
           </div>
           <div style={{
             background: '#3b82f6',
-            borderRadius: '12px',
-            padding: '12px 8px',
+            borderRadius: '8px',
+            padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
-            <div style={{ fontSize: '11px', marginTop: '2px' }}>En route</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
+            <div style={{ fontSize: '9px', marginTop: '1px' }}>En route</div>
           </div>
           <div style={{
             background: '#8b5cf6',
-            borderRadius: '12px',
-            padding: '12px 8px',
+            borderRadius: '8px',
+            padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.atDestination}</div>
-            <div style={{ fontSize: '11px', marginTop: '2px' }}>Arrivés</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.atDestination}</div>
+            <div style={{ fontSize: '9px', marginTop: '1px' }}>Arrivés</div>
           </div>
           <div style={{
             background: '#ef4444',
-            borderRadius: '12px',
-            padding: '12px 8px',
+            borderRadius: '8px',
+            padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
-            <div style={{ fontSize: '11px', marginTop: '2px' }}>Alertes</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
+            <div style={{ fontSize: '9px', marginTop: '1px' }}>Alertes</div>
           </div>
-        </div>
-
-        {/* Vitesse moyenne sur une ligne séparée */}
-        <div style={{
-          background: '#f59e0b',
-          borderRadius: '12px',
-          padding: '12px',
-          textAlign: 'center',
-          color: 'white',
-          width: '100px',
-          margin: '0 auto 16px'
-        }}>
-          <div style={{ fontSize: '22px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
-          <div style={{ fontSize: '11px', marginTop: '2px' }}>km/h moy</div>
+          <div style={{
+            background: '#f59e0b',
+            borderRadius: '8px',
+            padding: '6px 4px',
+            textAlign: 'center',
+            color: 'white'
+          }}>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
+            <div style={{ fontSize: '9px', marginTop: '1px' }}>km/h</div>
+          </div>
         </div>
       </div>
 
