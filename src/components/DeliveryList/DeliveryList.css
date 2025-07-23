@@ -46,7 +46,8 @@
 }
 
 .delivery-card {
-  width: 92%; /* <-- largeur ajustée comme dans la maquette */
+  width: 92%;
+  /* <-- largeur ajustée comme dans la maquette */
   background: hsl(var(--background));
   border: 1px solid hsl(var(--border));
   border-radius: var(--border-radius);
@@ -56,7 +57,7 @@
 
 .delivery-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .pagination {
@@ -98,7 +99,8 @@
   }
 
   .delivery-card {
-    width: 95%; /* plus souple sur mobile */
+    width: 95%;
+    /* plus souple sur mobile */
   }
 
   .pagination {
