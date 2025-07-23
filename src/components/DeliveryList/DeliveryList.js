@@ -182,7 +182,6 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
               delivery={delivery}
               isSelected={selectedDelivery?.truck_id === delivery.truck_id}
               onSelect={() => onSelectDelivery && onSelectDelivery(delivery)}
-              alerts={alerts}
             />
           ))
         ) : (
