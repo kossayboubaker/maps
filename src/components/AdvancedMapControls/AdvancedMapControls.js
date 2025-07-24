@@ -29,9 +29,9 @@ const AdvancedMapControls = ({
   return (
     <div style={{
       position: 'fixed',
-      top: '140px', // Position améliorée pour éviter conflit
+      top: '140px', // Sous le bouton notifications
       right: '20px',
-      zIndex: 2000,
+      zIndex: 1500, // Z-index inférieur aux notifications
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-end',
@@ -318,7 +318,7 @@ const AdvancedMapControls = ({
                   marginBottom: '12px' 
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '16px' }}>🚛</span>
+                    <span style={{ fontSize: '16px' }}>��</span>
                     <span style={{ 
                       fontSize: '14px', 
                       fontWeight: '700', 
