@@ -341,6 +341,11 @@ const App = () => {
     setIsAlertsOpen(!isAlertsOpen);
   };
 
+  // Callback pour recevoir toutes les alertes générées
+  const handleAlertsUpdate = (generatedAlerts) => {
+    setAllAlerts([...alerts, ...generatedAlerts]);
+  };
+
   // Simuler des mises à jour d'alertes en temps réel
   useEffect(() => {
     const interval = setInterval(() => {
