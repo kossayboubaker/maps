@@ -461,6 +461,7 @@ const App = () => {
             selectedDelivery={selectedDelivery}
             onSelectDelivery={handleDeliverySelect}
             alerts={alerts}
+            allAlerts={allAlerts}
             deletedAlerts={deletedAlerts}
             mapStyle={mapStyle}
             onMapReady={setMapInstance}
