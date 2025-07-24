@@ -1,4 +1,4 @@
-// Service pour récupérer des alertes réelles depuis OpenWeatherMap
+// Service pour récupérer des alertes réelles depuis OpenWeatherMap et TomTom
 class AlertsService {
   constructor() {
     // Clés API réelles
@@ -16,36 +16,62 @@ class AlertsService {
       { name: 'Sousse', lat: 35.8256, lon: 10.6369 }
     ];
     
-    // Types d'alertes exhaustifs avec icônes
+    // Types d'alertes exhaustifs avec icônes selon description utilisateur
     this.alertTypes = {
       // 🚗 Incidents Routiers & Trafic
-      accident: { title: 'Accident de circulation', icon: '🚗', severity: 'danger', delay: [20, 40] },
-      accidentMinor: { title: 'Accident mineur', icon: '���', severity: 'warning', delay: [10, 20] },
+      accident: { title: 'Accident de circulation', icon: '⚠️', severity: 'danger', delay: [20, 40] },
+      accidentMinor: { title: 'Accident mineur', icon: '🚗', severity: 'warning', delay: [10, 20] },
       accidentMajor: { title: 'Accident grave', icon: '🚨', severity: 'danger', delay: [30, 60] },
-      trafficJam: { title: 'Embouteillage', icon: '🚦', severity: 'warning', delay: [15, 30] },
-      slowTraffic: { title: 'Circulation ralentie', icon: '🐌', severity: 'info', delay: [5, 15] },
-      roadClosed: { title: 'Route fermée', icon: '🚧', severity: 'danger', delay: [60, 120] },
-      laneClosed: { title: 'Voie fermée', icon: '⚠️', severity: 'warning', delay: [10, 25] },
-      carStopped: { title: 'Véhicule en panne', icon: '🔧', severity: 'warning', delay: [15, 30] },
-      roadworks: { title: 'Travaux routiers', icon: '🚧', severity: 'warning', delay: [20, 45] },
-      maintenance: { title: 'Maintenance en cours', icon: '🔨', severity: 'info', delay: [10, 20] },
+      construction: { title: 'Travaux en cours', icon: '🚧', severity: 'warning', delay: [20, 45] },
+      traffic: { title: 'Embouteillage', icon: '🚦', severity: 'warning', delay: [15, 30] },
+      police: { title: 'Contrôle police', icon: '👮', severity: 'info', delay: [5, 15] },
+      maintenance: { title: 'Maintenance route', icon: '🔧', severity: 'warning', delay: [15, 30] },
+      info: { title: 'Information trafic', icon: 'ℹ️', severity: 'info', delay: [5, 10] },
+      danger: { title: 'Alerte critique', icon: '🚨', severity: 'danger', delay: [30, 60] },
+      warning: { title: 'Alerte de sécurité', icon: '⚠️', severity: 'warning', delay: [10, 25] },
       
-      // 🚓 Sécurité & Contrôles
-      policeCheck: { title: 'Contrôle de police', icon: '👮', severity: 'info', delay: [5, 15] },
-      speedTrap: { title: 'Radar mobile', icon: '📡', severity: 'info', delay: [2, 5] },
+      // 🌦️ Alertes Météo complètes selon description
+      weatherRain: { title: 'Alerte pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
+      weatherThunderstorm: { title: 'Alerte orage', icon: '⛈️', severity: 'danger', delay: [25, 45] },
+      weatherMist: { title: 'Alerte brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
+      weatherClear: { title: 'Conditions dégagées', icon: '☀️', severity: 'info', delay: [0, 5] },
+      weatherClouds: { title: 'Conditions nuageuses', icon: '☁️', severity: 'info', delay: [0, 5] },
+      weatherSnow: { title: 'Alerte neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
+      weatherWind: { title: 'Alerte vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
+      weatherFog: { title: 'Alerte brouillard épais', icon: '🌫️', severity: 'warning', delay: [15, 30] },
+      weatherHail: { title: 'Alerte grêle', icon: '🧊', severity: 'danger', delay: [20, 40] },
+      weatherHeat: { title: 'Alerte canicule', icon: '🔥', severity: 'warning', delay: [5, 15] },
+      weatherCold: { title: 'Alerte froid extrême', icon: '🥶', severity: 'warning', delay: [10, 20] },
+      weatherStorm: { title: 'Alerte tempête', icon: '🌪️', severity: 'danger', delay: [30, 60] },
+      weatherFlood: { title: 'Alerte inondation', icon: '🌊', severity: 'danger', delay: [45, 90] },
+      weatherDrought: { title: 'Alerte sécheresse', icon: '🏜️', severity: 'warning', delay: [0, 5] },
+      weatherSnowstorm: { title: 'Alerte tempête de neige', icon: '❄️', severity: 'danger', delay: [60, 120] },
+      weatherBlizzard: { title: 'Alerte blizzard', icon: '🌨️', severity: 'danger', delay: [60, 120] },
+      weatherTornado: { title: 'Alerte tornade', icon: '🌪️', severity: 'danger', delay: [90, 180] },
+      weatherHurricane: { title: 'Alerte ouragan', icon: '🌀', severity: 'danger', delay: [120, 240] },
+      weatherTyphoon: { title: 'Alerte typhon', icon: '🌀', severity: 'danger', delay: [120, 240] },
+      weatherVolcanic: { title: 'Alerte volcanique', icon: '🌋', severity: 'danger', delay: [180, 360] },
+      weatherLandslide: { title: 'Alerte glissement de terrain', icon: '⛰️', severity: 'danger', delay: [60, 120] },
+      weatherAvalanche: { title: 'Alerte avalanche', icon: '🏔️', severity: 'danger', delay: [60, 120] },
+      weatherWildfire: { title: 'Alerte incendie de forêt', icon: '🔥', severity: 'danger', delay: [90, 180] },
+      weatherExtremeHeat: { title: 'Alerte chaleur extrême', icon: '🌡️', severity: 'warning', delay: [10, 20] },
+      weatherExtremeCold: { title: 'Alerte froid extrême', icon: '🧊', severity: 'warning', delay: [15, 30] },
+      weatherTsunami: { title: 'Alerte tsunami', icon: '🌊', severity: 'danger', delay: [120, 240] },
+      weatherEarthquake: { title: 'Alerte séisme', icon: '🌍', severity: 'danger', delay: [60, 120] },
+      weatherLunar: { title: 'Alerte marée lunaire', icon: '🌙', severity: 'info', delay: [0, 10] },
+      weatherSolar: { title: 'Alerte marée solaire', icon: '☀️', severity: 'info', delay: [0, 10] },
+      weatherMeteor: { title: 'Alerte météorite', icon: '☄️', severity: 'warning', delay: [30, 60] },
+      weatherRadiation: { title: 'Alerte radiation', icon: '☢️', severity: 'danger', delay: [90, 180] },
+      weatherPollution: { title: 'Alerte pollution', icon: '🏭', severity: 'warning', delay: [10, 20] },
+      weatherToxic: { title: 'Alerte toxique', icon: '☠️', severity: 'danger', delay: [60, 120] },
+      weatherPollen: { title: 'Alerte pollen', icon: '🌸', severity: 'info', delay: [0, 5] },
+      weatherDust: { title: 'Alerte poussière', icon: '💨', severity: 'warning', delay: [10, 20] },
+      weatherSmoke: { title: 'Alerte fumée', icon: '💨', severity: 'warning', delay: [15, 30] },
+      weatherSand: { title: 'Alerte sable', icon: '🏜️', severity: 'warning', delay: [10, 25] },
+      weatherIce: { title: 'Alerte glace', icon: '🧊', severity: 'danger', delay: [20, 40] },
       
-      // 🌦️ Alertes Météo
-      rain: { title: 'Pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
-      heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
-      snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
-      fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
-      wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
-      
-      // Alertes par défaut
-      traffic: { title: 'Trafic', icon: '🚦', severity: 'warning', delay: [10, 20] },
-      weather: { title: 'Météo', icon: '🌤️', severity: 'info', delay: [5, 15] },
-      construction: { title: 'Travaux', icon: '🚧', severity: 'warning', delay: [15, 30] },
-      police: { title: 'Police', icon: '👮', severity: 'info', delay: [5, 10] }
+      // Types de base
+      weather: { title: 'Alerte météo', icon: '🌤️', severity: 'info', delay: [5, 15] }
     };
   }
 
@@ -124,7 +150,7 @@ class AlertsService {
       const temp = data.main.temp || 20;
       const windSpeed = data.wind?.speed || 0;
       
-      // Conditions nécessitant une alerte
+      // Conditions nécessitant une alerte selon types exhaustifs
       const needsAlert = 
         condition === 'Rain' || 
         condition === 'Thunderstorm' || 
@@ -143,7 +169,7 @@ class AlertsService {
         return distance < 50;
       });
       
-      // Déterminer la sévérité
+      // Déterminer le type d'alerte selon nouveaux types
       let alertType = 'weather';
       let severity = 'info';
       let delay = 5;
@@ -153,17 +179,27 @@ class AlertsService {
         severity = 'danger';
         delay = 20;
         icon = '⛈️';
-        alertType = 'heavyRain';
-      } else if (condition === 'Rain' || condition === 'Snow' || windSpeed > 10) {
+        alertType = 'weatherThunderstorm';
+      } else if (condition === 'Rain') {
         severity = 'warning';
         delay = 10;
-        icon = condition === 'Rain' ? '🌧️' : '❄️';
-        alertType = condition === 'Rain' ? 'rain' : 'snow';
-      }
-      
-      if (condition === 'Fog' || condition === 'Mist') {
+        icon = '🌧️';
+        alertType = 'weatherRain';
+      } else if (condition === 'Snow') {
+        severity = 'danger';
+        delay = 30;
+        icon = '❄️';
+        alertType = 'weatherSnow';
+      } else if (condition === 'Fog' || condition === 'Mist') {
+        severity = 'warning';
+        delay = 15;
         icon = '🌫️';
-        alertType = 'fog';
+        alertType = 'weatherFog';
+      } else if (windSpeed > 10) {
+        severity = 'warning';
+        delay = 10;
+        icon = '🌬️';
+        alertType = 'weatherWind';
       }
       
       return {
@@ -187,8 +223,19 @@ class AlertsService {
     }
   }
 
-  // Récupérer alertes trafic intelligentes
+  // Récupérer alertes trafic depuis TomTom API
   async getTrafficAlerts(truckRoutes = []) {
+    try {
+      // Essayer TomTom API d'abord
+      const tomtomAlerts = await this.getTomTomTrafficIncidents(truckRoutes);
+      if (tomtomAlerts.length > 0) {
+        return tomtomAlerts;
+      }
+    } catch (error) {
+      console.warn('TomTom API indisponible:', error.message);
+    }
+    
+    // Fallback vers génération intelligente
     try {
       return this.generateIntelligentTrafficAlerts(truckRoutes);
     } catch (error) {
@@ -197,7 +244,80 @@ class AlertsService {
     }
   }
 
-  // Génération intelligente d'alertes trafic
+  // Récupérer incidents trafic depuis TomTom API
+  async getTomTomTrafficIncidents(truckRoutes = []) {
+    const alerts = [];
+    
+    // Zones de surveillance en Tunisie
+    const surveillanceZones = [
+      { name: 'Tunis Centre', bbox: '10.1,36.7,10.2,36.9' },
+      { name: 'Sfax', bbox: '10.6,34.6,10.8,34.8' },
+      { name: 'Sousse', bbox: '10.5,35.7,10.7,35.9' }
+    ];
+    
+    for (const zone of surveillanceZones) {
+      try {
+        const response = await Promise.race([
+          fetch(`${this.TOMTOM_BASE_URL}/incidents?key=${this.TOMTOM_API_KEY}&bbox=${zone.bbox}&fields=incidents{type,geometry,properties{iconCategory}}&language=fr-FR`),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 6000))
+        ]);
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Filtrer les incidents terrestres uniquement
+          const filteredIncidents = data.incidents?.filter(incident => 
+            incident.geometry?.type === 'Point' && 
+            !incident.properties?.iconCategory?.includes('MARITIME')
+          ) || [];
+          
+          filteredIncidents.forEach(incident => {
+            const coords = incident.geometry.coordinates;
+            const properties = incident.properties;
+            
+            // Déterminer type d'alerte
+            let alertType = 'traffic';
+            if (properties.iconCategory?.includes('ACCIDENT')) alertType = 'accident';
+            else if (properties.iconCategory?.includes('CONSTRUCTION')) alertType = 'construction';
+            else if (properties.iconCategory?.includes('ROAD_CLOSURE')) alertType = 'danger';
+            
+            const alertInfo = this.alertTypes[alertType];
+            
+            // Trouver camions affectés
+            const affectedTrucks = truckRoutes.filter(truck => {
+              const distance = this.calculateDistance(truck.position, [coords[1], coords[0]]);
+              return distance < 30;
+            });
+            
+            alerts.push({
+              id: `tomtom_${incident.id || Date.now()}_${Math.random()}`,
+              type: alertType,
+              title: `${alertInfo.title} - ${zone.name}`,
+              icon: alertInfo.icon,
+              location: zone.name,
+              position: [coords[1], coords[0]], // Inversion lat/lng pour Leaflet
+              description: properties.description || alertInfo.title,
+              severity: alertInfo.severity,
+              delay: this.getRandomDelay(alertInfo.delay),
+              affectedRoutes: affectedTrucks.map(truck => truck.truck_id),
+              timestamp: new Date().toISOString(),
+              isActive: true,
+              source: 'tomtom_api'
+            });
+          });
+        } else if (response.status === 429) {
+          console.warn('TomTom API quota dépassé (429)');
+          break;
+        }
+      } catch (zoneError) {
+        console.warn(`TomTom zone ${zone.name} erreur:`, zoneError.message);
+      }
+    }
+    
+    return alerts;
+  }
+
+  // Génération intelligente d'alertes trafic avec plus de types
   generateIntelligentTrafficAlerts(truckRoutes) {
     const currentHour = new Date().getHours();
     const currentDay = new Date().getDay();
@@ -207,15 +327,20 @@ class AlertsService {
     const zones = [
       { name: 'Centre-ville Tunis', coords: [36.8065, 10.1815], risk: 0.6 },
       { name: 'Autoroute A1', coords: [36.7200, 10.2100], risk: 0.4 },
-      { name: 'Port de Sfax', coords: [34.7406, 10.7603], risk: 0.3 }
+      { name: 'Port de Sfax', coords: [34.7406, 10.7603], risk: 0.3 },
+      { name: 'Sousse Centre', coords: [35.8256, 10.6369], risk: 0.5 },
+      { name: 'Route GP1', coords: [36.4, 10.6], risk: 0.4 }
     ];
     
-    // Types d'alertes possibles
+    // Types d'alertes possibles selon description utilisateur
     const possibleAlerts = [
-      { type: 'trafficJam', probability: 0.4 },
-      { type: 'roadworks', probability: 0.3 },
-      { type: 'policeCheck', probability: 0.2 },
-      { type: 'carStopped', probability: 0.3 }
+      { type: 'accident', probability: 0.3 },
+      { type: 'construction', probability: 0.4 },
+      { type: 'traffic', probability: 0.5 },
+      { type: 'police', probability: 0.2 },
+      { type: 'maintenance', probability: 0.3 },
+      { type: 'warning', probability: 0.25 },
+      { type: 'info', probability: 0.35 }
     ];
     
     zones.forEach(zone => {
@@ -223,8 +348,8 @@ class AlertsService {
       const isWeekend = currentDay === 0 || currentDay === 6;
       const isPeakHour = (currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 19);
       
-      if (isPeakHour && !isWeekend) adjustedRisk *= 1.5;
-      if (isWeekend) adjustedRisk *= 0.7;
+      if (isPeakHour && !isWeekend) adjustedRisk *= 1.8;
+      if (isWeekend) adjustedRisk *= 0.6;
       
       if (Math.random() < adjustedRisk) {
         const selectedAlert = possibleAlerts[Math.floor(Math.random() * possibleAlerts.length)];
@@ -258,13 +383,17 @@ class AlertsService {
     return alerts;
   }
 
-  // Générer descriptions contextuelles
+  // Générer descriptions contextuelles selon types étendus
   generateDescription(alertType, location) {
     const descriptions = {
-      trafficJam: [`Embouteillage important à ${location}`, `Circulation dense observée`],
-      roadworks: [`Travaux de réfection en cours à ${location}`, `Maintenance routière`],
-      policeCheck: [`Contrôle de routine des forces de l'ordre`, `Point de contrôle actif`],
-      carStopped: [`Véhicule en détresse à ${location}`, `Incident routier en cours`]
+      accident: [`Accident de circulation à ${location}`, `Collision routière signalée`],
+      construction: [`Travaux en cours à ${location}`, `Zone de construction active`],
+      traffic: [`Embouteillage à ${location}`, `Circulation dense observée`],
+      police: [`Contrôle police à ${location}`, `Point de contrôle actif`],
+      maintenance: [`Maintenance route à ${location}`, `Intervention technique`],
+      warning: [`Alerte de sécurité à ${location}`, `Danger signalé`],
+      info: [`Information trafic ${location}`, `Mise à jour circulation`],
+      danger: [`Alerte critique ${location}`, `Situation dangereuse`]
     };
     
     const options = descriptions[alertType] || [`Alerte trafic à ${location}`];
@@ -305,7 +434,7 @@ class AlertsService {
     return [
       {
         id: `basic_traffic_${Date.now()}`,
-        type: 'trafficJam',
+        type: 'traffic',
         title: 'Surveillance trafic active',
         icon: '🚦',
         location: 'Réseau routier',
