@@ -61,10 +61,8 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
     const enRoute = deliveries.filter(d => d.state === 'En Route').length;
     const arrived = deliveries.filter(d => d.state === 'At Destination').length;
 
-    // Calculer vraies alertes depuis le prop alerts
-    const alertsAffectingTrucks = alerts.filter(alert =>
-      alert.affectedRoutes && alert.affectedRoutes.length > 0
-    ).length;
+    // Calculer vraies alertes depuis les APIs - toutes les alertes actives
+    const totalAlerts = alerts.length; // Toutes les alertes réelles
 
     // Vitesse moyenne des camions en route
     const trucksInRoute = deliveries.filter(d => d.state === 'En Route');
@@ -72,7 +70,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
       ? Math.round(trucksInRoute.reduce((sum, d) => sum + (d.speed || 0), 0) / trucksInRoute.length)
       : 0;
 
-    return { total, enRoute, arrived, totalAlerts: alertsAffectingTrucks, avgSpeed };
+    return { total, enRoute, arrived, totalAlerts, avgSpeed };
   }, [deliveries, alerts]);
 
   return (
