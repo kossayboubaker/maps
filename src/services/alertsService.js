@@ -20,7 +20,7 @@ class AlertsService {
     this.alertTypes = {
       // 🚗 Incidents Routiers & Trafic
       accident: { title: 'Accident de circulation', icon: '🚗', severity: 'danger', delay: [20, 40] },
-      accidentMinor: { title: 'Accident mineur', icon: '🚙', severity: 'warning', delay: [10, 20] },
+      accidentMinor: { title: 'Accident mineur', icon: '���', severity: 'warning', delay: [10, 20] },
       accidentMajor: { title: 'Accident grave', icon: '🚨', severity: 'danger', delay: [30, 60] },
       trafficJam: { title: 'Embouteillage', icon: '🚦', severity: 'warning', delay: [15, 30] },
       slowTraffic: { title: 'Circulation ralentie', icon: '🐌', severity: 'info', delay: [5, 15] },
@@ -49,37 +49,66 @@ class AlertsService {
     };
   }
 
-  // Récupérer les alertes météo avec gestion d'erreur robuste
+  // Récupérer les alertes météo avec cache pour éviter erreurs 429
   async getWeatherAlerts(truckRoutes = []) {
-    const alerts = [];
-    
-    try {
-      for (const city of this.cities) {
+    // Cache pour éviter trop d'appels API
+    const cacheKey = 'weather_cache_v1';
+    const cacheTime = 'weather_cache_time_v1';
+    const cached = localStorage.getItem(cacheKey);
+    const cacheTimestamp = localStorage.getItem(cacheTime);
+
+    // Utiliser cache si moins de 15 minutes pour éviter erreur 429
+    if (cached && cacheTimestamp) {
+      const age = Date.now() - parseInt(cacheTimestamp);
+      if (age < 900000) { // 15 minutes
         try {
-          const response = await Promise.race([
-            fetch(`${this.OPENWEATHER_BASE_URL}/weather?lat=${city.lat}&lon=${city.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
-          ]);
-          
-          if (response.ok) {
-            const data = await response.json();
-            const alert = this.processWeatherData(data, city, truckRoutes);
-            if (alert) {
-              alerts.push(alert);
-            }
-          }
-        } catch (cityError) {
-          console.warn(`Erreur météo ${city.name}:`, cityError.message);
+          console.log('Cache météo utilisé (éviter 429)');
+          return JSON.parse(cached);
+        } catch (e) {
+          localStorage.removeItem(cacheKey);
+          localStorage.removeItem(cacheTime);
         }
       }
-    } catch (error) {
-      console.warn('Erreur générale météo:', error.message);
     }
-    
+
+    const alerts = [];
+
+    try {
+      // Limiter à 1 ville pour éviter quota 429
+      const singleCity = this.cities[0]; // Tunis seulement
+
+      try {
+        const response = await Promise.race([
+          fetch(`${this.OPENWEATHER_BASE_URL}/weather?lat=${singleCity.lat}&lon=${singleCity.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+        ]);
+
+        if (response.ok) {
+          const data = await response.json();
+          const alert = this.processWeatherData(data, singleCity, truckRoutes);
+          if (alert) {
+            alerts.push(alert);
+          }
+
+          // Sauvegarder en cache
+          localStorage.setItem(cacheKey, JSON.stringify(alerts));
+          localStorage.setItem(cacheTime, Date.now().toString());
+
+        } else if (response.status === 429) {
+          console.warn('API météo quota dépassé (429), fallback activé');
+          return this.getFallbackWeatherAlerts(truckRoutes);
+        }
+      } catch (cityError) {
+        console.warn(`Météo API indisponible:`, cityError.message);
+      }
+    } catch (error) {
+      console.warn('Erreur météo générale:', error.message);
+    }
+
     if (alerts.length === 0) {
       return this.getFallbackWeatherAlerts(truckRoutes);
     }
-    
+
     return alerts;
   }
 
