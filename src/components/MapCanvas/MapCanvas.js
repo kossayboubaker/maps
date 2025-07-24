@@ -213,6 +213,7 @@ const MapCanvas = ({
     }
 
     return routesMap;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trucksData]);
 
   const createTruckIcon = useCallback((truck) => {
@@ -484,6 +485,7 @@ const MapCanvas = ({
     return () => {
       leafletMap.remove();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Mise à jour du style de carte
@@ -625,7 +627,7 @@ const MapCanvas = ({
         });
       });
     }
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, trucksData, selectedDelivery, showRoutes, alerts, showAlerts, createTruckIcon, onSelectDelivery]);
 
   // Couche météo
