@@ -124,6 +124,7 @@ const AlertNotifications = ({
       clearTimeout(initTimer);
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trucks, fetchRealAlerts, activeAlerts.length]);
 
 
