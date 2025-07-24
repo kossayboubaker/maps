@@ -1,9 +1,9 @@
 // Service pour récupérer des alertes réelles depuis OpenWeatherMap et TomTom
 class AlertsService {
   constructor() {
-    // Clés API - à remplacer par vos vraies clés
-    this.OPENWEATHER_API_KEY = '4437791bbdc183036e4e04dc15c92cb8'; // Remplacez par votre clé
-    this.TOMTOM_API_KEY = 'YOUR_TOMTOM_API_KEY'; // Remplacez par votre clé TomTom
+    // Clés API réelles
+    this.OPENWEATHER_API_KEY = '4437791bbdc183036e4e04dc15c92cb8';
+    this.TOMTOM_API_KEY = 'EYzVkdZCbYKTsmoxBiz17rpTQnN3qxz0';
     
     // Base URLs
     this.OPENWEATHER_BASE_URL = 'https://api.openweathermap.org/data/2.5';
