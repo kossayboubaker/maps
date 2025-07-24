@@ -42,45 +42,47 @@ const AlertNotifications = ({
     return R * c;
   };
 
-  // Mettre à jour les alertes périodiquement
+  // Mettre à jour les alertes avec les APIs réelles
   useEffect(() => {
-    const updateAlerts = () => {
-      const trafficAlerts = generateIntelligentAlerts();
-      const weatherAlertsData = generateWeatherAlerts();
-      const allGeneratedAlerts = [...trafficAlerts, ...weatherAlertsData];
+    const updateAlerts = async () => {
+      try {
+        const realAlerts = await fetchRealAlerts();
 
-      // Marquer les nouvelles alertes pour l'ombre
-      const currentAlertIds = new Set(activeAlerts.map(a => a.id));
-      const newIds = new Set();
-      allGeneratedAlerts.forEach(alert => {
-        if (!currentAlertIds.has(alert.id)) {
-          newIds.add(alert.id);
+        // Marquer les nouvelles alertes pour l'ombre
+        const currentAlertIds = new Set(activeAlerts.map(a => a.id));
+        const newIds = new Set();
+        realAlerts.forEach(alert => {
+          if (!currentAlertIds.has(alert.id)) {
+            newIds.add(alert.id);
+          }
+        });
+
+        if (newIds.size > 0) {
+          setNewAlertIds(newIds);
+          // Retirer l'ombre après 10 secondes
+          setTimeout(() => {
+            setNewAlertIds(prev => {
+              const updated = new Set(prev);
+              newIds.forEach(id => updated.delete(id));
+              return updated;
+            });
+          }, 10000);
         }
-      });
 
-      if (newIds.size > 0) {
-        setNewAlertIds(newIds);
-        // Retirer l'ombre après 10 secondes
-        setTimeout(() => {
-          setNewAlertIds(prev => {
-            const updated = new Set(prev);
-            newIds.forEach(id => updated.delete(id));
-            return updated;
-          });
-        }, 10000);
+        setActiveAlerts(realAlerts);
+      } catch (error) {
+        console.error('Erreur mise à jour alertes:', error);
       }
-
-      setActiveAlerts(allGeneratedAlerts);
     };
 
     // Mise à jour initiale
     updateAlerts();
 
-    // Mise à jour toutes les 30 secondes
-    const interval = setInterval(updateAlerts, 30000);
+    // Mise à jour toutes les 5 minutes (APIs réelles)
+    const interval = setInterval(updateAlerts, 300000);
 
     return () => clearInterval(interval);
-  }, [trucks, generateIntelligentAlerts, generateWeatherAlerts]);
+  }, [trucks, fetchRealAlerts, activeAlerts]);
 
 
 
