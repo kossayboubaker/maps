@@ -189,43 +189,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         )}
       </div>
 
-      {totalPages > 1 && (
-        <div className="sticky bottom-0 bg-background border-t border-border px-2 py-1 flex items-center justify-between flex-shrink-0">
-          <button
-            onClick={handlePreviousPage}
-            disabled={currentPage === 0}
-            aria-label="Previous page"
-            className="h-6 w-6 xxs:h-7 xxs:w-7 xs:h-8 xs:w-8 rounded-full border border-border bg-background hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-smooth flex items-center justify-center text-xs xxs:text-sm"
-          >
-            <svg
-              className="h-3 w-3 xxs:h-4 xxs:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div className="text-xs xxs:text-sm text-muted-foreground font-medium">
-            {currentPage + 1}/{totalPages}
-          </div>
-          <button
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages - 1}
-            aria-label="Next page"
-            className="h-6 w-6 xxs:h-7 xxs:w-7 xs:h-8 xs:w-8 rounded-full border border-border bg-background hover:bg-accent hover:text-accent-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-smooth flex items-center justify-center text-xs xxs:text-sm"
-          >
-            <svg
-              className="h-3 w-3 xxs:h-4 xxs:w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      )}
+
     </div>
   );
 };
