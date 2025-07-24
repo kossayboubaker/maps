@@ -255,6 +255,7 @@ const App = () => {
   const [mapStyle, setMapStyle] = useState('standard');
   const [showAlerts, setShowAlerts] = useState(false);
   const [alerts, setAlerts] = useState(mockAlerts);
+  const [allAlerts, setAllAlerts] = useState([]); // Toutes les alertes (statiques + générées)
   const [deletedAlerts, setDeletedAlerts] = useState([]);
   const [mapInstance, setMapInstance] = useState(null);
   const [showRoutes, setShowRoutes] = useState(true);
@@ -353,7 +354,7 @@ const App = () => {
         },
         {
           type: 'traffic',
-          icons: ['🚦', '🚗', '⚠️'],
+          icons: ['🚦', '����', '⚠️'],
           severities: ['info', 'warning'],
           locations: ['Rond-point', 'Avenue Habib Bourguiba', 'Zone industrielle']
         }
