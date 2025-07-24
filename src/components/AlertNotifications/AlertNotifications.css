@@ -18,8 +18,8 @@
 
 .alert-notifications-panel {
   position: fixed;
-  top: 200px; /* Position sous les deux boutons */
-  left: 20px; /* Aligné avec les boutons */
+  top: 140px; /* Position sous bouton notifications */
+  right: 20px; /* À droite selon screenshot */
   z-index: 2500;
   width: 420px;
   max-width: 90vw;
