@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AlertNotifications.css';
+import alertsService from '../../services/alertsService';
 
 const AlertNotifications = ({
   alerts = [],
