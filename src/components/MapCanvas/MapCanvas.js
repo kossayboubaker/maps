@@ -35,33 +35,7 @@ const MapCanvas = ({
     });
   };
 
-  const generateWeatherData = (lat, lng, locationName) => {
-    const conditions = ['Clear', 'Clouds', 'Rain', 'Mist'];
-    const descriptions = {
-      'Clear': 'ensoleillé',
-      'Clouds': 'nuageux', 
-      'Rain': 'pluvieux',
-      'Mist': 'brumeux'
-    };
-    
-    const condition = conditions[Math.floor(Math.random() * conditions.length)];
-    const baseTemp = locationName === 'Tunis' ? 20 : locationName === 'Sfax' ? 22 : 18;
-    const temp = baseTemp + Math.floor(Math.random() * 10) - 5;
-    
-    const weatherInfo = {
-      temp,
-      description: descriptions[condition],
-      icon: condition.toLowerCase(),
-      humidity: 40 + Math.floor(Math.random() * 40),
-      windSpeed: 5 + Math.floor(Math.random() * 15),
-      visibility: 8 + Math.random() * 2,
-      condition,
-      pressure: 1010 + Math.floor(Math.random() * 20),
-      feelsLike: temp + Math.floor(Math.random() * 4) - 2
-    };
 
-    return weatherInfo;
-  };
 
   // Récupérer vraie route depuis TomTom Routing API
   const getTomTomRoute = async (startCoord, endCoord) => {
@@ -350,7 +324,7 @@ const MapCanvas = ({
       weatherClear: { color: '#F59E0B', icon: '☀️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
       weatherClouds: { color: '#6B7280', icon: '☁️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherSnow: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
-      weatherWind: { color: '#10B981', icon: '🌬���', bgColor: '#D1FAE5', borderColor: '#10B981' },
+      weatherWind: { color: '#10B981', icon: '🌬️', bgColor: '#D1FAE5', borderColor: '#10B981' },
       weatherFog: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
       weatherHail: { color: '#06B6D4', icon: '🧊', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
       weatherHeat: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
