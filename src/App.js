@@ -374,20 +374,7 @@ const App = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       // Simulation de nouvelles alertes
-      const newAlertTypes = [
-        {
-          type: 'weather',
-          icons: ['🌧️', '🌫️', '❄️', '⛈️'],
-          severities: ['warning', 'danger'],
-          locations: ['Autoroute A1', 'Route GP8', 'Centre-ville']
-        },
-        {
-          type: 'traffic',
-          icons: ['🚦', '����', '⚠️'],
-          severities: ['info', 'warning'],
-          locations: ['Rond-point', 'Avenue Habib Bourguiba', 'Zone industrielle']
-        }
-      ];
+
 
       // Simulation désactivée - utilisation APIs réelles uniquement
       console.log('Mode APIs réelles - simulation désactivée');
