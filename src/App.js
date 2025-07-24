@@ -360,9 +360,14 @@ const App = () => {
     setIsAlertsOpen(!isAlertsOpen);
   };
 
-  // Callback pour recevoir toutes les alertes générées
+  // Callback pour recevoir toutes les alertes générées par les APIs
   const handleAlertsUpdate = (generatedAlerts) => {
-    setAllAlerts([...alerts, ...generatedAlerts]);
+    // Combiner alertes statiques + vraies alertes APIs
+    const combinedAlerts = [...alerts, ...generatedAlerts];
+    setAllAlerts(combinedAlerts);
+
+    // Log pour debug compteur
+    console.log(`Compteur alertes mis à jour: ${combinedAlerts.length} (${alerts.length} statiques + ${generatedAlerts.length} APIs)`);
   };
 
   // Simuler des mises à jour d'alertes en temps réel
