@@ -147,7 +147,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         <div className="text-xs text-muted-foreground font-medium">Livraisons</div>
         {filteredDeliveries?.length > 0 && (
           <div className="text-xs xxs:text-sm text-muted-foreground">
-            {startIndex + 1}-{Math.min(endIndex, filteredDeliveries?.length)}/{filteredDeliveries.length}
+            {filteredDeliveries.length} camion{filteredDeliveries.length > 1 ? 's' : ''}
           </div>
         )}
       </div>
