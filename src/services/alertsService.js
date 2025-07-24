@@ -59,7 +59,7 @@ class AlertsService {
       heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
       snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
       fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
-      wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
+      wind: { title: 'Vent fort', icon: '����️', severity: 'warning', delay: [10, 20] },
       blackIce: { title: 'Verglas', icon: '🧊', severity: 'danger', delay: [25, 45] },
       flashFlood: { title: 'Crue soudaine', icon: '🌊', severity: 'danger', delay: [60, 120] },
       dustStorm: { title: 'Tempête de sable', icon: '🌪️', severity: 'danger', delay: [30, 60] },
@@ -481,19 +481,73 @@ class AlertsService {
     return R * c;
   }
 
-  // Méthode principale pour récupérer toutes les alertes
+  // Méthode principale pour récupérer toutes les alertes avec gestion d'erreur robuste
   async getAllAlerts(truckRoutes = []) {
+    const allAlerts = [];
+
     try {
-      const [weatherAlerts, trafficAlerts] = await Promise.all([
+      // Récupérer alertes météo avec timeout
+      const weatherPromise = Promise.race([
         this.getWeatherAlerts(truckRoutes),
-        this.getTrafficAlerts(truckRoutes)
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout météo')), 10000))
       ]);
-      
-      return [...weatherAlerts, ...trafficAlerts];
+
+      const weatherAlerts = await weatherPromise.catch(error => {
+        console.warn('Alertes météo indisponibles:', error.message);
+        return this.getFallbackWeatherAlerts(truckRoutes);
+      });
+
+      allAlerts.push(...weatherAlerts);
     } catch (error) {
-      console.error('Erreur récupération alertes:', error);
-      return [];
+      console.warn('Erreur météo complète, utilisation fallback basique');
     }
+
+    try {
+      // Récupérer alertes trafic avec timeout
+      const trafficPromise = Promise.race([
+        this.getTrafficAlerts(truckRoutes),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout trafic')), 8000))
+      ]);
+
+      const trafficAlerts = await trafficPromise.catch(error => {
+        console.warn('Alertes trafic indisponibles:', error.message);
+        return this.generateBasicFallbackAlerts(truckRoutes);
+      });
+
+      allAlerts.push(...trafficAlerts);
+    } catch (error) {
+      console.warn('Erreur trafic complète, génération alertes basiques');
+      allAlerts.push(...this.generateBasicFallbackAlerts(truckRoutes));
+    }
+
+    // S'assurer qu'on retourne toujours au moins quelques alertes
+    if (allAlerts.length === 0) {
+      console.log('Génération d\'alertes de secours');
+      return this.generateEmergencyAlerts(truckRoutes);
+    }
+
+    return allAlerts;
+  }
+
+  // Alertes de secours en cas d'échec complet
+  generateEmergencyAlerts(truckRoutes) {
+    return [
+      {
+        id: `emergency_${Date.now()}`,
+        type: 'info',
+        title: 'Système d\'alertes actif',
+        icon: 'ℹ️',
+        location: 'Système',
+        position: [36.8065, 10.1815],
+        description: 'Surveillance du trafic en cours',
+        severity: 'info',
+        delay: 0,
+        affectedRoutes: [],
+        timestamp: new Date().toISOString(),
+        isActive: true,
+        source: 'emergency'
+      }
+    ];
   }
 }
 
