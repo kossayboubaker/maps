@@ -475,14 +475,14 @@ const App = () => {
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
             position: 'fixed',
-            top: '80px', // Position améliorée
-            left: isAsideOpen ? '10px' : '10px',
+            top: '80px', // Bouton panneau en haut
+            left: '20px',
             zIndex: 3000,
             background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
             border: '2px solid rgba(255,255,255,0.3)',
             borderRadius: '50%',
-            width: '44px',
-            height: '44px',
+            width: '48px',
+            height: '48px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
