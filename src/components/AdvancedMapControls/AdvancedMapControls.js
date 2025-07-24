@@ -24,7 +24,7 @@ const AdvancedMapControls = ({
     { value: 'terrain', label: 'Terrain', icon: '🏔️' }
   ];
 
-  const currentStyle = mapStyles.find(style => style.value === mapStyle) || mapStyles[0];
+
 
   return (
     <div style={{
