@@ -62,6 +62,50 @@ const MapCanvas = ({
     return weatherInfo;
   };
 
+  // Récupérer vraie route depuis TomTom Routing API
+  const getTomTomRoute = async (startCoord, endCoord) => {
+    const TOMTOM_API_KEY = 'EYzVkdZCbYKTsmoxBiz17rpTQnN3qxz0';
+    const startLatLng = `${startCoord[0]},${startCoord[1]}`;
+    const endLatLng = `${endCoord[0]},${endCoord[1]}`;
+
+    try {
+      const response = await Promise.race([
+        fetch(`https://api.tomtom.com/routing/1/calculateRoute/${startLatLng}:${endLatLng}/json?key=${TOMTOM_API_KEY}&travelMode=truck&traffic=true&routeType=fastest&avoid=unpavedRoads&vehicleMaxSpeed=90&vehicleWeight=15000`),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+      ]);
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.routes && data.routes[0] && data.routes[0].legs) {
+          const route = [];
+          data.routes[0].legs.forEach(leg => {
+            if (leg.points) {
+              leg.points.forEach(point => {
+                route.push([point.latitude, point.longitude]);
+              });
+            }
+          });
+
+          // Valider que la route est terrestre
+          const isValidRoute = route.every(point =>
+            point[0] >= 30.5 && point[0] <= 37.5 &&
+            point[1] >= 8.0 && point[1] <= 11.8
+          );
+
+          if (isValidRoute && route.length > 0) {
+            console.log(`TomTom route réelle récupérée: ${route.length} points`);
+            return route;
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('TomTom Routing API indisponible:', error.message);
+    }
+
+    // Fallback vers route intelligente terrestre
+    return getRealRoute(startCoord, endCoord);
+  };
+
   const getRealRoute = (startCoord, endCoord, waypoints = []) => {
     // Trajectoires TERRESTRES uniquement - pas de mer
     const route = [startCoord];
@@ -123,82 +167,75 @@ const MapCanvas = ({
     return interpolatedRoute;
   };
 
-  const generateRealRoutes = useCallback(() => {
+  const generateRealRoutes = useCallback(async () => {
     const routesMap = {};
 
-    trucksData.forEach(truck => {
+    // Traiter les routes en parallèle avec TomTom API
+    const routePromises = trucksData.map(async (truck) => {
       let startCoord, endCoord, waypoints = [];
 
       switch (truck.truck_id) {
-        case 'TN-001': // Tunis vers Sfax (route A1 + GP1) - ÉVITER LA MER
-          startCoord = [36.8065, 10.1815]; // Tunis
-          endCoord = [34.7406, 10.7603]; // Sfax
-          waypoints = [
-            [36.7500, 10.1200], // Sortie Tunis OUEST (éviter mer)
-            [36.6000, 10.0500], // Route intérieure
-            [36.3000, 10.0000], // Zaghouan direction
-            [35.9000, 9.9500], // Kairouan région
-            [35.5000, 10.2000], // Vers Sfax par intérieur
-            [35.0000, 10.4000], // Approche Sfax terrestre
-          ];
+        case 'TN-001': // Tunis vers Sfax
+          startCoord = [36.8065, 10.1815];
+          endCoord = [34.7406, 10.7603];
           break;
-        case 'TN-002': // Tunis vers Sousse (route INTÉRIEURE)
-          startCoord = [36.8065, 10.1815]; // Tunis
-          endCoord = [35.8256, 10.6369]; // Sousse
-          waypoints = [
-            [36.7000, 10.0800], // Sortie ouest Tunis
-            [36.5000, 10.0000], // Route intérieure
-            [36.2000, 10.1000], // Éviter côte
-            [36.0000, 10.3000], // Approche Sousse par terres
-          ];
+        case 'TN-002': // Tunis vers Sousse
+          startCoord = [36.8065, 10.1815];
+          endCoord = [35.8256, 10.6369];
           break;
-        case 'TN-003': // Ariana vers Kairouan (route sûre)
-          startCoord = [36.4098, 10.1398]; // Ariana
-          endCoord = [35.6786, 10.0963]; // Kairouan
-          waypoints = [
-            [36.3500, 10.0800], // Sortie Ariana sud
-            [36.2000, 10.0500], // Route directe sud
-            [36.0000, 10.0000], // Zaghouan
-            [35.8500, 10.0500], // Approche Kairouan
-          ];
+        case 'TN-003': // Ariana vers Kairouan
+          startCoord = [36.4098, 10.1398];
+          endCoord = [35.6786, 10.0963];
           break;
-        case 'TN-004': // La Goulette vers Nabeul (route TERRESTRE)
-          startCoord = [36.7538, 10.2286]; // La Goulette
-          endCoord = [36.4561, 10.7376]; // Nabeul
-          waypoints = [
-            [36.7000, 10.1500], // Route ouest d'abord
-            [36.6000, 10.2000], // Éviter côte directe
-            [36.5500, 10.4000], // Route intérieure
-            [36.5000, 10.6000], // Approche Nabeul terrestre
-          ];
+        case 'TN-004': // La Goulette vers Nabeul
+          startCoord = [36.7538, 10.2286];
+          endCoord = [36.4561, 10.7376];
           break;
-        case 'TN-005': // Sfax vers Gabes (route du sud sûre)
-          startCoord = [34.7406, 10.7603]; // Sfax
-          endCoord = [33.8869, 10.0982]; // Gabes
-          waypoints = [
-            [34.6500, 10.5000], // Sortie Sfax ouest
-            [34.4000, 10.3000], // Route GP1 intérieure
-            [34.2000, 10.2000], // Éviter côte
-            [34.0000, 10.1500], // Approche Gabes terre
-          ];
+        case 'TN-005': // Sfax vers Gabes
+          startCoord = [34.7406, 10.7603];
+          endCoord = [33.8869, 10.0982];
           break;
         default:
           startCoord = truck.pickup?.coordinates || truck.position;
           endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
-
-          // Routes génériques TERRESTRES uniquement
-          const midLat = (startCoord[0] + endCoord[0]) / 2;
-          const safeLng = Math.max(8.2, Math.min(10.8, (startCoord[1] + endCoord[1]) / 2));
-          waypoints = [
-            [midLat + 0.1, safeLng - 0.2], // Point intermédiaire ouest
-            [midLat, safeLng], // Point central sûr
-            [midLat - 0.1, safeLng + 0.1] // Point final terrestre
-          ];
       }
 
-      const realRoute = getRealRoute(startCoord, endCoord, waypoints);
-      routesMap[truck.truck_id] = realRoute;
+      // Essayer TomTom API d'abord, puis fallback
+      try {
+        const tomtomRoute = await getTomTomRoute(startCoord, endCoord);
+        return { truckId: truck.truck_id, route: tomtomRoute };
+      } catch (error) {
+        console.warn(`Fallback route pour ${truck.truck_id}:`, error.message);
+
+        // Fallback avec waypoints prédéfinis
+        const fallbackWaypoints = {
+          'TN-001': [[36.7500, 10.1200], [36.3000, 10.0000], [35.9000, 9.9500], [35.5000, 10.2000]],
+          'TN-002': [[36.7000, 10.0800], [36.5000, 10.0000], [36.2000, 10.1000]],
+          'TN-003': [[36.3500, 10.0800], [36.2000, 10.0500], [36.0000, 10.0000]],
+          'TN-004': [[36.7000, 10.1500], [36.6000, 10.2000], [36.5500, 10.4000]],
+          'TN-005': [[34.6500, 10.5000], [34.4000, 10.3000], [34.2000, 10.2000]]
+        };
+
+        waypoints = fallbackWaypoints[truck.truck_id] || [];
+        const fallbackRoute = getRealRoute(startCoord, endCoord, waypoints);
+        return { truckId: truck.truck_id, route: fallbackRoute };
+      }
     });
+
+    try {
+      const results = await Promise.all(routePromises);
+      results.forEach(result => {
+        routesMap[result.truckId] = result.route;
+      });
+    } catch (error) {
+      console.warn('Erreur génération routes:', error.message);
+      // Fallback final
+      trucksData.forEach(truck => {
+        const startCoord = truck.pickup?.coordinates || truck.position;
+        const endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
+        routesMap[truck.truck_id] = getRealRoute(startCoord, endCoord);
+      });
+    }
 
     return routesMap;
   }, [trucksData]);
@@ -423,20 +460,32 @@ const MapCanvas = ({
       onMapReady(leafletMap);
     }
 
-    // Générer les routes réelles après initialisation
-    setTimeout(() => {
-      const routes = generateRealRoutes();
-      setTrucksData(prev => prev.map(truck => {
-        const fallbackRoute = [
-          truck.position,
-          truck.destinationCoords || truck.destination?.coordinates || truck.position
-        ];
+    // Générer les routes réelles après initialisation avec TomTom API
+    setTimeout(async () => {
+      try {
+        const routes = await generateRealRoutes();
+        setTrucksData(prev => prev.map(truck => {
+          const fallbackRoute = [
+            truck.position,
+            truck.destinationCoords || truck.destination?.coordinates || truck.position
+          ];
 
-        return {
-          ...truck,
-          realRoute: routes[truck.truck_id] || fallbackRoute
-        };
-      }));
+          return {
+            ...truck,
+            realRoute: routes[truck.truck_id] || fallbackRoute
+          };
+        }));
+      } catch (error) {
+        console.warn('Erreur routes TomTom, utilisation fallback');
+        // Routes par défaut si TomTom échoue
+        setTrucksData(prev => prev.map(truck => {
+          const fallbackRoute = [
+            truck.position,
+            truck.destinationCoords || truck.destination?.coordinates || truck.position
+          ];
+          return { ...truck, realRoute: fallbackRoute };
+        }));
+      }
     }, 500);
 
     return () => {
