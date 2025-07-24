@@ -7,6 +7,7 @@ const AlertNotifications = ({
   trucks = [],
   onAlertClick,
   onCloseAlert,
+  onAlertsUpdate,
   isOpen,
   onToggle
 }) => {
