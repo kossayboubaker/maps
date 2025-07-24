@@ -168,7 +168,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 space-y-1" style={{ maxHeight: 'calc(100vh - 400px)' }}>
+      <div className="flex-1 overflow-hidden px-2 space-y-1" style={{ maxHeight: 'calc(100vh - 350px)' }}>
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
             <DeliveryCard
