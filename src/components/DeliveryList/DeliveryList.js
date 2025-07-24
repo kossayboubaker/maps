@@ -74,7 +74,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
   }, [deliveries, alerts]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" style={{ height: 'calc(100vh - 60px)', maxHeight: 'calc(100vh - 60px)' }}>
       <div className="p-2 border-b border-border flex-shrink-0">
         <div className="relative mb-3 ml-8">
           <svg
