@@ -60,35 +60,39 @@ const AlertNotifications = ({
 
         if (newIds.size > 0) {
           setNewAlertIds(newIds);
-          // Retirer l'ombre après 10 secondes
+          // Retirer l'ombre après 8 secondes
           setTimeout(() => {
             setNewAlertIds(prev => {
               const updated = new Set(prev);
               newIds.forEach(id => updated.delete(id));
               return updated;
             });
-          }, 10000);
+          }, 8000);
         }
 
         setActiveAlerts(realAlerts);
 
-        // Notifier le parent des nouvelles alertes
+        // Notifier le parent des nouvelles alertes VRAIES
         if (onAlertsUpdate) {
           onAlertsUpdate(realAlerts);
         }
       } catch (error) {
-        console.error('Erreur mise à jour alertes:', error);
+        console.warn('Erreur mise à jour alertes:', error.message);
+        // En cas d'erreur, au moins utiliser fallback
+        if (onAlertsUpdate) {
+          onAlertsUpdate([]);
+        }
       }
     };
 
-    // Mise à jour initiale
+    // Mise à jour initiale immédiate
     updateAlerts();
 
-    // Mise à jour toutes les 5 minutes (APIs réelles)
-    const interval = setInterval(updateAlerts, 300000);
+    // Mise à jour toutes les 10 minutes pour éviter quota API
+    const interval = setInterval(updateAlerts, 600000);
 
     return () => clearInterval(interval);
-  }, [trucks, fetchRealAlerts, activeAlerts]);
+  }, [trucks, fetchRealAlerts]);
 
 
 
