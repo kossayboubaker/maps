@@ -324,11 +324,25 @@ const App = () => {
   };
 
   const handleAlertClick = (alert) => {
-    if (mapInstance) {
-      mapInstance.flyTo(alert.position, 13, {
+    if (mapInstance && alert.position) {
+      // Zoomer et centrer sur l'alerte avec animation fluide
+      mapInstance.flyTo(alert.position, 15, {
         animate: true,
-        duration: 1
+        duration: 1.5
       });
+
+      // Fermer le panneau d'alertes pour voir la carte
+      setIsAlertsOpen(false);
+
+      // Optionnel: ouvrir la popup de l'alerte après navigation
+      setTimeout(() => {
+        // Trouver le marqueur d'alerte et ouvrir sa popup
+        mapInstance.eachLayer(layer => {
+          if (layer.options && layer.options.alertId === alert.id) {
+            layer.openPopup();
+          }
+        });
+      }, 1600);
     }
   };
 
