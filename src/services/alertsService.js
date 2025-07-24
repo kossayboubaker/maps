@@ -59,7 +59,7 @@ class AlertsService {
       heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
       snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
       fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
-      wind: { title: 'Vent fort', icon: '����️', severity: 'warning', delay: [10, 20] },
+      wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
       blackIce: { title: 'Verglas', icon: '🧊', severity: 'danger', delay: [25, 45] },
       flashFlood: { title: 'Crue soudaine', icon: '🌊', severity: 'danger', delay: [60, 120] },
       dustStorm: { title: 'Tempête de sable', icon: '🌪️', severity: 'danger', delay: [30, 60] },
@@ -95,30 +95,54 @@ class AlertsService {
     };
   }
 
-  // Récupérer les alertes météo réelles depuis OpenWeatherMap
+  // Récupérer les alertes météo réelles depuis OpenWeatherMap avec gestion d'erreur
   async getWeatherAlerts(truckRoutes = []) {
     const alerts = [];
-    
+
     try {
-      for (const city of this.cities) {
-        const response = await fetch(
-          `${this.OPENWEATHER_BASE_URL}/weather?lat=${city.lat}&lon=${city.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          const alert = this.processWeatherData(data, city, truckRoutes);
-          if (alert) {
-            alerts.push(alert);
+      // Limiter à 3 villes pour éviter trop d'appels API
+      const limitedCities = this.cities.slice(0, 3);
+
+      for (const city of limitedCities) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000); // Timeout 5s
+
+          const response = await fetch(
+            `${this.OPENWEATHER_BASE_URL}/weather?lat=${city.lat}&lon=${city.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`,
+            {
+              signal: controller.signal,
+              headers: {
+                'Accept': 'application/json',
+              }
+            }
+          );
+
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const data = await response.json();
+            const alert = this.processWeatherData(data, city, truckRoutes);
+            if (alert) {
+              alerts.push(alert);
+            }
+          } else {
+            console.warn(`API météo ${city.name}: ${response.status}`);
           }
+        } catch (cityError) {
+          console.warn(`Erreur météo ${city.name}:`, cityError.message);
+          // Continuer avec les autres villes
         }
       }
     } catch (error) {
-      console.error('Erreur récupération météo:', error);
-      // Fallback avec données simulées en cas d'erreur API
+      console.warn('Erreur générale récupération météo:', error.message);
+    }
+
+    // Si aucune alerte météo, utiliser fallback
+    if (alerts.length === 0) {
       return this.getFallbackWeatherAlerts(truckRoutes);
     }
-    
+
     return alerts;
   }
 
