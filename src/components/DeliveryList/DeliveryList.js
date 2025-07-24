@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import DeliveryCard from '../DeliveryCard/DeliveryCard';
 
 const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery, onSelectDelivery, alerts = [] }) => {
-  // Suppression de la pagination pour éviter le scroll
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 3; // 3 éléments par page pour un design optimal
 
   // Recherche intelligente améliorée
   const filteredDeliveries = useMemo(() => {
