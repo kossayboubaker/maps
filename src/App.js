@@ -243,7 +243,7 @@ const mockAlerts = [
     affectedRoutes: ['TN-004'],
     timestamp: new Date().toISOString(),
     delay: 12,
-    icon: '🚧',
+    icon: '��',
     location: 'Route GP1 vers Nabeul'
   }
 ];
@@ -429,7 +429,7 @@ const App = () => {
         onToggle={handleToggleAlertPanel}
       />
 
-      <div className="flex h-[calc(100vh-60px)] w-full">
+      <div className="flex w-full" style={{ height: 'calc(100vh - 60px)', maxHeight: 'calc(100vh - 60px)', overflow: 'hidden' }}>
         <aside
           className={`transition-all duration-300 ${isAsideOpen ? 'w-full max-w-[280px] xxs:max-w-[300px] xs:max-w-[320px] xs2:max-w-[340px] sm:max-w-[360px] sm2:max-w-[380px] md:max-w-[400px]' : 'w-0'} bg-background border-r border-border flex-shrink-0 overflow-hidden`}
         >
