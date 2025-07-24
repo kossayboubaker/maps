@@ -163,7 +163,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         <div className="text-xs text-muted-foreground font-medium">Livraisons</div>
         {filteredDeliveries?.length > 0 && (
           <div className="text-xs xxs:text-sm text-muted-foreground">
-            {currentPage + 1}-{totalPages}/{filteredDeliveries.length}
+            {startIndex + 1}-{Math.min(endIndex, filteredDeliveries?.length)}/{filteredDeliveries.length}
           </div>
         )}
       </div>
@@ -205,31 +205,38 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         )}
       </div>
 
-      {/* Contrôles de pagination compacts SANS espace */}
+      {/* Contrôles de pagination compacts SANS espace - Format exact screenshot */}
       {totalPages > 1 && (
-        <div className="bg-background border-t border-border px-2 py-1 flex items-center justify-between flex-shrink-0" style={{ margin: 0, padding: '4px 8px' }}>
+        <div
+          className="bg-background border-t border-border flex items-center justify-between flex-shrink-0"
+          style={{
+            margin: 0,
+            padding: '8px 12px',
+            minHeight: '40px'
+          }}
+        >
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 0}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
+            className="flex items-center gap-1 px-3 py-1.5 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
           >
-            <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Préc
           </button>
 
-          <div className="text-xs text-muted-foreground font-medium">
+          <div className="text-sm text-muted-foreground font-semibold">
             {currentPage + 1}/{totalPages}
           </div>
 
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages - 1}
-            className="flex items-center gap-1 px-2 py-1 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs"
+            className="flex items-center gap-1 px-3 py-1.5 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
           >
             Suiv
-            <svg className="h-2.5 w-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
