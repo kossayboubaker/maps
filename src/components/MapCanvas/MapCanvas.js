@@ -16,7 +16,8 @@ const MapCanvas = ({
   showRoutes = true,
   showWeather = false,
   followTruck = false,
-  deletedAlerts = []
+  deletedAlerts = [],
+  onAlertClick
 }) => {
   const [map, setMap] = useState(null);
   const [trucksData, setTrucksData] = useState(deliveries);
@@ -349,7 +350,7 @@ const MapCanvas = ({
       weatherClear: { color: '#F59E0B', icon: '☀️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
       weatherClouds: { color: '#6B7280', icon: '☁️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherSnow: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
-      weatherWind: { color: '#10B981', icon: '🌬️', bgColor: '#D1FAE5', borderColor: '#10B981' },
+      weatherWind: { color: '#10B981', icon: '🌬���', bgColor: '#D1FAE5', borderColor: '#10B981' },
       weatherFog: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
       weatherHail: { color: '#06B6D4', icon: '🧊', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
       weatherHeat: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
