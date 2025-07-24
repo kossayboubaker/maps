@@ -389,25 +389,9 @@ const App = () => {
         }
       ];
 
-      if (Math.random() < 0.3) { // 30% de chance d'avoir une nouvelle alerte
-        const alertType = newAlertTypes[Math.floor(Math.random() * newAlertTypes.length)];
-        const newAlert = {
-          id: `alert-${Date.now()}`,
-          type: alertType.type,
-          title: `${alertType.type === 'weather' ? 'Météo' : 'Trafic'} - ${alertType.locations[Math.floor(Math.random() * alertType.locations.length)]}`,
-          description: `Nouvelle alerte ${alertType.type} détectée`,
-          severity: alertType.severities[Math.floor(Math.random() * alertType.severities.length)],
-          position: [36.8 + (Math.random() - 0.5) * 2, 10.2 + (Math.random() - 0.5) * 2],
-          affectedRoutes: [`TN-00${Math.floor(Math.random() * 5) + 1}`],
-          timestamp: new Date().toISOString(),
-          delay: Math.floor(Math.random() * 30) + 5,
-          icon: alertType.icons[Math.floor(Math.random() * alertType.icons.length)],
-          location: alertType.locations[Math.floor(Math.random() * alertType.locations.length)]
-        };
-
-        setAlerts(prev => [newAlert, ...prev.slice(0, 9)]); // Garder max 10 alertes
-      }
-    }, 45000); // Nouvelle alerte potentielle toutes les 45 secondes
+      // Simulation désactivée - utilisation APIs réelles uniquement
+      console.log('Mode APIs réelles - simulation désactivée');
+    }, 3600000); // Check toutes les heures seulement
 
     return () => clearInterval(interval);
   }, []);
