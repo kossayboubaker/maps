@@ -3,7 +3,7 @@ import DeliveryCard from '../DeliveryCard/DeliveryCard';
 
 const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery, onSelectDelivery, alerts = [] }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 3; // 3 éléments par page pour un design optimal
+  const itemsPerPage = 2; // 2 éléments par page comme demandé dans le screenshot
 
   // Recherche intelligente améliorée
   const filteredDeliveries = useMemo(() => {
@@ -163,7 +163,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         <div className="text-xs text-muted-foreground font-medium">Livraisons</div>
         {filteredDeliveries?.length > 0 && (
           <div className="text-xs xxs:text-sm text-muted-foreground">
-            {startIndex + 1}-{Math.min(endIndex, filteredDeliveries?.length)}/{filteredDeliveries.length}
+            {currentPage + 1}-{totalPages}/{filteredDeliveries.length}
           </div>
         )}
       </div>
