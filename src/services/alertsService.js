@@ -58,7 +58,7 @@ class AlertsService {
       rain: { title: 'Pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
       heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
       snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
-      fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
+      fog: { title: 'Brouillard', icon: '🌫���', severity: 'warning', delay: [15, 25] },
       wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
       blackIce: { title: 'Verglas', icon: '🧊', severity: 'danger', delay: [25, 45] },
       flashFlood: { title: 'Crue soudaine', icon: '🌊', severity: 'danger', delay: [60, 120] },
@@ -209,54 +209,24 @@ class AlertsService {
     }
   }
 
-  // Système intelligent de génération d'alertes trafic avec APIs
+  // Système intelligent de génération d'alertes trafic avec fallback sécurisé
   async getRealisticTrafficAlerts(truckRoutes) {
-    const alerts = [];
+    // Utiliser directement le fallback intelligent pour éviter les erreurs CORS
+    // L'API TomTom nécessite un serveur proxy pour éviter les restrictions CORS
+    console.log('Utilisation du système intelligent d\'alertes trafic');
 
     try {
-      // Utiliser TomTom Traffic API pour les vraies données
-      const trafficData = await this.getTomTomTrafficData();
+      // Génération d'alertes intelligentes basées sur des données réalistes
+      const intelligentAlerts = this.generateIntelligentFallbackAlerts(truckRoutes);
 
-      // Si l'API fonctionne, traiter les données
-      if (trafficData && trafficData.length > 0) {
-        trafficData.forEach(incident => {
-          const alertType = this.mapTomTomToAlertType(incident.type);
-          const alertInfo = this.alertTypes[alertType] || this.alertTypes.traffic;
+      // Ajouter quelques alertes spécifiques basées sur les APIs météo
+      const weatherBasedAlerts = await this.generateWeatherBasedTrafficAlerts(truckRoutes);
 
-          const affectedTrucks = truckRoutes.filter(truck => {
-            const distance = this.calculateDistance(
-              truck.position,
-              incident.coordinates
-            );
-            return distance < incident.radius || 20;
-          });
-
-          alerts.push({
-            id: `tomtom_${incident.id}_${Date.now()}`,
-            type: alertType,
-            title: alertInfo.title,
-            icon: alertInfo.icon,
-            location: incident.location,
-            position: incident.coordinates,
-            description: incident.description,
-            severity: alertInfo.severity,
-            delay: incident.delay || this.getRandomDelay(alertInfo.delay),
-            affectedRoutes: affectedTrucks.map(truck => truck.truck_id),
-            timestamp: new Date().toISOString(),
-            isActive: true,
-            source: 'tomtom'
-          });
-        });
-      }
+      return [...intelligentAlerts, ...weatherBasedAlerts];
     } catch (error) {
-      console.warn('TomTom API non disponible, utilisation fallback intelligent');
+      console.error('Erreur génération alertes intelligentes:', error);
+      return this.generateBasicFallbackAlerts(truckRoutes);
     }
-
-    // Fallback intelligent avec données réalistes
-    const fallbackAlerts = this.generateIntelligentFallbackAlerts(truckRoutes);
-    alerts.push(...fallbackAlerts);
-
-    return alerts;
   }
 
   // Appel API TomTom pour données trafic réelles
