@@ -458,6 +458,7 @@ const App = () => {
             showRoutes={showRoutes}
             showWeather={showWeather}
             followTruck={followTruck}
+            onAlertClick={handleAlertClick}
           />
         </main>
         <button
