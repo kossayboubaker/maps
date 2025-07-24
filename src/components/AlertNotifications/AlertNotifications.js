@@ -13,66 +13,17 @@ const AlertNotifications = ({
   const [activeAlerts, setActiveAlerts] = useState([]);
   const [newAlertIds, setNewAlertIds] = useState(new Set());
 
-  // Générer des alertes en temps réel intelligentes
-  const generateIntelligentAlerts = useCallback(() => {
-    const currentTime = new Date();
-
-    // Alertes basées sur les données de trafic simulées
-    const trafficConditions = [
-      {
-        location: 'Autoroute A1 - Tunis Nord',
-        coordinates: [36.8342, 10.1456],
-        type: 'traffic',
-        severity: 'warning',
-        description: 'Ralentissements importants due à l\'heure de pointe',
-        delay: 15,
-        affectedRoutes: ['TN-001', 'TN-003']
-      },
-      {
-        location: 'Avenue Habib Bourguiba - Centre Ville',
-        coordinates: [36.8065, 10.1815],
-        type: 'construction',
-        severity: 'danger',
-        description: 'Travaux de réfection de la chaussée en cours',
-        delay: 25,
-        affectedRoutes: ['TN-002']
-      },
-      {
-        location: 'Route GP1 - Sfax',
-        coordinates: [34.7406, 10.7603],
-        type: 'accident',
-        severity: 'danger',
-        description: 'Accident de la circulation - véhicule en panne',
-        delay: 30,
-        affectedRoutes: ['TN-001']
-      },
-      {
-        location: 'Autoroute A4 - Sousse',
-        coordinates: [35.8256, 10.6369],
-        type: 'police',
-        severity: 'info',
-        description: 'Contrôle de routine des forces de l\'ordre',
-        delay: 5,
-        affectedRoutes: ['TN-002']
-      }
-    ];
-
-    // Sélectionner aléatoirement 2-3 alertes actives
-    const selectedAlerts = trafficConditions
-      .sort(() => Math.random() - 0.5)
-      .slice(0, Math.floor(Math.random() * 3) + 2)
-      .map((alert, index) => ({
-        id: `alert_${index}_${Date.now()}`,
-        title: getAlertTitle(alert.type),
-        icon: getAlertIcon(alert.type),
-        position: alert.coordinates,
-        timestamp: currentTime.toISOString(),
-        isActive: true,
-        ...alert
-      }));
-
-    return selectedAlerts;
-  }, []);
+  // Récupérer des alertes réelles depuis les APIs
+  const fetchRealAlerts = useCallback(async () => {
+    try {
+      // Récupérer toutes les alertes réelles
+      const realAlerts = await alertsService.getAllAlerts(trucks);
+      return realAlerts;
+    } catch (error) {
+      console.error('Erreur récupération alertes réelles:', error);
+      return [];
+    }
+  }, [trucks]);
 
   const getAlertTitle = (type) => {
     const titles = {
@@ -417,7 +368,7 @@ const AlertNotifications = ({
             </span>
           </div>
           <div className="stat-item">
-            <span className="stat-icon">⚠️</span>
+            <span className="stat-icon">⚠���</span>
             <span className="stat-label">Attention</span>
             <span className="stat-value">
               {getAllAlerts().filter(a => a.severity === 'warning').length}
