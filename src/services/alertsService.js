@@ -514,4 +514,5 @@ class AlertsService {
   }
 }
 
-export default new AlertsService();
+const alertsServiceInstance = new AlertsService();
+export default alertsServiceInstance;
