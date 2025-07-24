@@ -25,29 +25,7 @@ const AlertNotifications = ({
     }
   }, [trucks]);
 
-  const getAlertTitle = (type) => {
-    const titles = {
-      accident: 'Accident de circulation',
-      construction: 'Travaux en cours',
-      traffic: 'Embouteillage',
-      police: 'Contrôle police',
-      weather: 'Alerte météo',
-      maintenance: 'Maintenance route'
-    };
-    return titles[type] || 'Alerte trafic';
-  };
-
-  const getAlertIcon = (type) => {
-    const icons = {
-      accident: '⚠️',
-      construction: '🚧',
-      traffic: '🚦',
-      police: '👮',
-      weather: '🌧️',
-      maintenance: '🔧'
-    };
-    return icons[type] || '⚠️';
-  };
+  // Les APIs retournent déjà les titres et icônes appropriés
 
   // Générer alertes météo simulées (évite les appels API problématiques)
   const generateWeatherAlerts = useCallback(() => {
