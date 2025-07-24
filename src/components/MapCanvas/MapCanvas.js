@@ -327,68 +327,86 @@ const MapCanvas = ({
   }, [selectedDelivery, alerts, map]);
 
   const createAlertIcon = (alert) => {
+    // Styles complètes pour tous les types d'alertes selon description
     const alertStyles = {
-      accident: {
-        color: '#EF4444',
-        icon: '⚠️',
-        bgColor: '#FEE2E2',
-        borderColor: '#EF4444'
-      },
-      construction: {
-        color: '#F59E0B',
-        icon: '🚧',
-        bgColor: '#FEF3C7',
-        borderColor: '#F59E0B'
-      },
-      traffic: {
-        color: '#3B82F6',
-        icon: '🚦',
-        bgColor: '#DBEAFE',
-        borderColor: '#3B82F6'
-      },
-      weather: {
-        color: '#6B7280',
-        icon: alert.icon || '🌧️',
-        bgColor: '#F3F4F6',
-        borderColor: '#6B7280'
-      },
-      police: {
-        color: '#8B5CF6',
-        icon: '👮',
-        bgColor: '#EDE9FE',
-        borderColor: '#8B5CF6'
-      },
-      maintenance: {
-        color: '#10B981',
-        icon: '🔧',
-        bgColor: '#D1FAE5',
-        borderColor: '#10B981'
-      }
+      // Trafic & Accidents
+      accident: { color: '#EF4444', icon: '⚠️', bgColor: '#FEE2E2', borderColor: '#EF4444' },
+      accidentMinor: { color: '#F59E0B', icon: '🚗', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
+      accidentMajor: { color: '#DC2626', icon: '🚨', bgColor: '#FEE2E2', borderColor: '#DC2626' },
+      construction: { color: '#F59E0B', icon: '🚧', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
+      traffic: { color: '#3B82F6', icon: '🚦', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
+      police: { color: '#8B5CF6', icon: '👮', bgColor: '#EDE9FE', borderColor: '#8B5CF6' },
+      maintenance: { color: '#10B981', icon: '🔧', bgColor: '#D1FAE5', borderColor: '#10B981' },
+      info: { color: '#6B7280', icon: 'ℹ️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
+      danger: { color: '#DC2626', icon: '🚨', bgColor: '#FEE2E2', borderColor: '#DC2626' },
+      warning: { color: '#F59E0B', icon: '⚠️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
+
+      // Météo complète
+      weather: { color: '#6B7280', icon: alert.icon || '🌤️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
+      weatherRain: { color: '#3B82F6', icon: '🌧️', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
+      weatherThunderstorm: { color: '#7C3AED', icon: '⛈️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherMist: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
+      weatherClear: { color: '#F59E0B', icon: '☀️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
+      weatherClouds: { color: '#6B7280', icon: '☁️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
+      weatherSnow: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
+      weatherWind: { color: '#10B981', icon: '🌬️', bgColor: '#D1FAE5', borderColor: '#10B981' },
+      weatherFog: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
+      weatherHail: { color: '#06B6D4', icon: '🧊', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
+      weatherHeat: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
+      weatherCold: { color: '#06B6D4', icon: '🥶', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
+      weatherStorm: { color: '#7C3AED', icon: '🌪️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherFlood: { color: '#3B82F6', icon: '🌊', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
+      weatherSnowstorm: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
+      weatherBlizzard: { color: '#06B6D4', icon: '🌨️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
+      weatherTornado: { color: '#7C3AED', icon: '🌪️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherHurricane: { color: '#7C3AED', icon: '🌀', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherVolcanic: { color: '#EF4444', icon: '🌋', bgColor: '#FEE2E2', borderColor: '#EF4444' },
+      weatherWildfire: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
+      weatherEarthquake: { color: '#92400E', icon: '🌍', bgColor: '#FEF3C7', borderColor: '#92400E' },
+      weatherTsunami: { color: '#3B82F6', icon: '🌊', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
+      weatherPollution: { color: '#6B7280', icon: '🏭', bgColor: '#F3F4F6', borderColor: '#6B7280' },
+      weatherPollen: { color: '#F59E0B', icon: '🌸', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
+      weatherDust: { color: '#92400E', icon: '💨', bgColor: '#FEF3C7', borderColor: '#92400E' },
+      weatherSmoke: { color: '#6B7280', icon: '💨', bgColor: '#F3F4F6', borderColor: '#6B7280' },
+      weatherIce: { color: '#06B6D4', icon: '🧊', bgColor: '#CFFAFE', borderColor: '#06B6D4' }
     };
 
     const style = alertStyles[alert.type] || alertStyles.accident;
 
+    // Taille adaptative selon sévérité
+    const size = alert.severity === 'danger' ? 48 : alert.severity === 'warning' ? 44 : 40;
+    const fontSize = alert.severity === 'danger' ? 24 : alert.severity === 'warning' ? 22 : 20;
+
     return L.divIcon({
       html: `
         <div style="
-          width: 42px;
-          height: 42px;
-          background: ${style.bgColor};
+          width: ${size}px;
+          height: ${size}px;
+          background: linear-gradient(135deg, ${style.bgColor} 0%, ${style.bgColor}CC 100%);
           border: 3px solid ${style.borderColor};
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 20px;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-          animation: alertPulse 2s infinite;
+          font-size: ${fontSize}px;
+          box-shadow: 0 6px 20px rgba(0,0,0,0.25), 0 0 15px ${style.borderColor}40;
+          animation: alertPulse 2.5s ease-in-out infinite;
+          backdrop-filter: blur(5px);
+          position: relative;
+          overflow: hidden;
         ">
-          ${style.icon}
+          <div style="
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3) 0%, transparent 50%);
+            border-radius: 50%;
+          "></div>
+          <span style="position: relative; z-index: 2;">${style.icon}</span>
         </div>
       `,
       className: '',
-      iconSize: [42, 42],
-      iconAnchor: [21, 21],
+      iconSize: [size, size],
+      iconAnchor: [size / 2, size / 2],
     });
   };
 
@@ -619,7 +637,17 @@ const MapCanvas = ({
           setHoveredItem(null);
         });
 
-        // PAS de popup - tout se passe avec les tooltips
+        // Clic pour centrer sur l'alerte avec animation
+        alertMarker.on('click', () => {
+          if (onAlertClick) {
+            onAlertClick(alert);
+          }
+          // Animation de focus sur l'alerte
+          map.flyTo(alert.position, Math.max(map.getZoom(), 14), {
+            animate: true,
+            duration: 1.5
+          });
+        });
       });
     }
 
@@ -874,8 +902,19 @@ const MapCanvas = ({
       <style>
         {`
           @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+          }
+
+          @keyframes alertPulse {
+            0%, 100% {
+              transform: scale(1);
+              box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            }
+            50% {
+              transform: scale(1.1);
+              box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+            }
           }
         `}
       </style>
