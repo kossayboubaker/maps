@@ -58,7 +58,7 @@ class AlertsService {
       rain: { title: 'Pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
       heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
       snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
-      fog: { title: 'Brouillard', icon: '🌫���', severity: 'warning', delay: [15, 25] },
+      fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
       wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
       blackIce: { title: 'Verglas', icon: '🧊', severity: 'danger', delay: [25, 45] },
       flashFlood: { title: 'Crue soudaine', icon: '🌊', severity: 'danger', delay: [60, 120] },
@@ -229,32 +229,86 @@ class AlertsService {
     }
   }
 
-  // Appel API TomTom pour données trafic réelles
-  async getTomTomTrafficData() {
-    const bbox = '8.0,30.0,12.0,38.0'; // Bounding box Tunisie
-    const url = `${this.TOMTOM_BASE_URL}/incidentDetails?key=${this.TOMTOM_API_KEY}&bbox=${bbox}&fields=incidents&language=fr-FR`;
+  // Générer alertes basées sur données météo existantes
+  async generateWeatherBasedTrafficAlerts(truckRoutes) {
+    const alerts = [];
 
     try {
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        return data.incidents?.map(incident => ({
-          id: incident.id,
-          type: incident.properties?.iconCategory || 'accident',
-          coordinates: incident.geometry?.coordinates ?
-            [incident.geometry.coordinates[1], incident.geometry.coordinates[0]] :
-            [36.8065, 10.1815],
-          location: incident.properties?.description || 'Route inconnue',
-          description: incident.properties?.events?.[0]?.description || 'Incident de circulation',
-          delay: incident.properties?.delay || 15,
-          radius: incident.properties?.length || 1000
-        })) || [];
+      // Utiliser les données météo pour générer des alertes trafic contextuelles
+      for (const city of this.cities.slice(0, 3)) { // Limiter à 3 villes pour performance
+        try {
+          const response = await fetch(
+            `${this.OPENWEATHER_BASE_URL}/weather?lat=${city.lat}&lon=${city.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`,
+            {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+              }
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const weatherCondition = data.weather[0]?.main;
+
+            // Générer alertes trafic basées sur météo
+            if (weatherCondition === 'Rain' || weatherCondition === 'Thunderstorm') {
+              const affectedTrucks = truckRoutes.filter(truck => {
+                const distance = this.calculateDistance(truck.position, [city.lat, city.lon]);
+                return distance < 30;
+              });
+
+              alerts.push({
+                id: `weather_traffic_${city.name}_${Date.now()}`,
+                type: 'slowTraffic',
+                title: `Circulation ralentie - ${city.name}`,
+                icon: '🌧️',
+                location: `${city.name} - Conditions météo`,
+                position: [city.lat, city.lon],
+                description: `Circulation ralentie due aux conditions météo (${data.weather[0].description})`,
+                severity: 'warning',
+                delay: weatherCondition === 'Thunderstorm' ? 20 : 10,
+                affectedRoutes: affectedTrucks.map(truck => truck.truck_id),
+                timestamp: new Date().toISOString(),
+                isActive: true,
+                source: 'weather-traffic'
+              });
+            }
+          }
+        } catch (cityError) {
+          console.warn(`Erreur météo pour ${city.name}:`, cityError.message);
+        }
       }
     } catch (error) {
-      console.error('Erreur TomTom API:', error);
+      console.warn('Erreur génération alertes météo-trafic:', error.message);
     }
 
-    return [];
+    return alerts;
+  }
+
+  // Fallback basique en cas d'échec complet
+  generateBasicFallbackAlerts(truckRoutes) {
+    const basicAlerts = [
+      {
+        id: `basic_traffic_${Date.now()}`,
+        type: 'trafficJam',
+        title: 'Embouteillage - Centre-ville Tunis',
+        icon: '🚦',
+        location: 'Centre-ville Tunis',
+        position: [36.8065, 10.1815],
+        description: 'Circulation dense en centre-ville',
+        severity: 'warning',
+        delay: 15,
+        affectedRoutes: truckRoutes.filter(truck =>
+          this.calculateDistance(truck.position, [36.8065, 10.1815]) < 20
+        ).map(truck => truck.truck_id),
+        timestamp: new Date().toISOString(),
+        isActive: true,
+        source: 'basic-fallback'
+      }
+    ];
+
+    return basicAlerts;
   }
 
   // Mapper les types TomTom vers nos types d'alertes
