@@ -18,6 +18,81 @@ class AlertsService {
       { name: 'Bizerte', lat: 37.2746, lon: 9.8739 },
       { name: 'Gabès', lat: 33.8869, lon: 10.0982 }
     ];
+
+    // Types d'alertes exhaustifs avec icônes
+    this.alertTypes = {
+      // 🚗 Incidents Routiers & Trafic
+      accident: { title: 'Accident de circulation', icon: '🚗', severity: 'danger', delay: [20, 40] },
+      accidentMinor: { title: 'Accident mineur', icon: '🚙', severity: 'warning', delay: [10, 20] },
+      accidentMajor: { title: 'Accident grave', icon: '🚨', severity: 'danger', delay: [30, 60] },
+      trafficJam: { title: 'Embouteillage', icon: '🚦', severity: 'warning', delay: [15, 30] },
+      slowTraffic: { title: 'Circulation ralentie', icon: '🐌', severity: 'info', delay: [5, 15] },
+      roadClosed: { title: 'Route fermée', icon: '🚧', severity: 'danger', delay: [60, 120] },
+      laneClosed: { title: 'Voie fermée', icon: '⚠️', severity: 'warning', delay: [10, 25] },
+      carStopped: { title: 'Véhicule en panne', icon: '🔧', severity: 'warning', delay: [15, 30] },
+      roadworks: { title: 'Travaux routiers', icon: '🚧', severity: 'warning', delay: [20, 45] },
+      maintenance: { title: 'Maintenance en cours', icon: '🔨', severity: 'info', delay: [10, 20] },
+      pothole: { title: 'Nid-de-poule dangereux', icon: '🕳️', severity: 'warning', delay: [5, 10] },
+      roadDamage: { title: 'Chaussée endommagée', icon: '⚡', severity: 'warning', delay: [15, 25] },
+      oilSpill: { title: 'Déversement hydrocarbures', icon: '🛢️', severity: 'danger', delay: [30, 60] },
+      animalOnRoad: { title: 'Animal sur chaussée', icon: '🦌', severity: 'warning', delay: [10, 20] },
+
+      // 🚓 Sécurité & Contrôles
+      policeCheck: { title: 'Contrôle de police', icon: '👮', severity: 'info', delay: [5, 15] },
+      speedTrap: { title: 'Radar mobile', icon: '📡', severity: 'info', delay: [2, 5] },
+      alcoholCheck: { title: 'Contrôle alcoolémie', icon: '🍺', severity: 'info', delay: [10, 20] },
+      crimeAlert: { title: 'Zone à risque', icon: '⚠️', severity: 'danger', delay: [0, 0] },
+      terrorismAlert: { title: 'Alerte sécuritaire', icon: '🚨', severity: 'danger', delay: [0, 0] },
+
+      // ⚡ Points d'Intérêt Spéciaux
+      chargingStation: { title: 'Borne de recharge', icon: '🔌', severity: 'info', delay: [0, 0] },
+      chargingStationAvailable: { title: 'Borne disponible', icon: '✅', severity: 'info', delay: [0, 0] },
+      chargingStationOccupied: { title: 'Borne occupée', icon: '❌', severity: 'info', delay: [0, 0] },
+      gasStation: { title: 'Station-service', icon: '⛽', severity: 'info', delay: [0, 0] },
+      restArea: { title: 'Aire de repos', icon: '🛏️', severity: 'info', delay: [0, 0] },
+      tollBooth: { title: 'Péage', icon: '💰', severity: 'info', delay: [5, 10] },
+      weighStation: { title: 'Poste de pesage', icon: '⚖️', severity: 'info', delay: [10, 15] },
+      borderCrossing: { title: 'Poste frontalier', icon: '🛂', severity: 'info', delay: [15, 30] },
+
+      // 🌦️ Alertes Météo Étendues
+      rain: { title: 'Pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
+      heavyRain: { title: 'Pluie forte', icon: '⛈️', severity: 'danger', delay: [20, 40] },
+      snow: { title: 'Neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
+      fog: { title: 'Brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
+      wind: { title: 'Vent fort', icon: '🌬️', severity: 'warning', delay: [10, 20] },
+      blackIce: { title: 'Verglas', icon: '🧊', severity: 'danger', delay: [25, 45] },
+      flashFlood: { title: 'Crue soudaine', icon: '🌊', severity: 'danger', delay: [60, 120] },
+      dustStorm: { title: 'Tempête de sable', icon: '🌪️', severity: 'danger', delay: [30, 60] },
+      ashCloud: { title: 'Nuage de cendres', icon: '🌋', severity: 'danger', delay: [45, 90] },
+      highTides: { title: 'Marée haute dangereuse', icon: '🌊', severity: 'warning', delay: [20, 40] },
+      frostWarning: { title: 'Risque de gel', icon: '❄️', severity: 'warning', delay: [15, 30] },
+
+      // 🚧 Événements Spéciaux
+      protest: { title: 'Manifestation', icon: '✊', severity: 'warning', delay: [30, 90] },
+      parade: { title: 'Défilé public', icon: '🎪', severity: 'warning', delay: [20, 60] },
+      sportEvent: { title: 'Événement sportif', icon: '⚽', severity: 'info', delay: [15, 45] },
+      concert: { title: 'Concert', icon: '🎵', severity: 'info', delay: [20, 60] },
+      roadRace: { title: 'Course cycliste', icon: '🚴', severity: 'warning', delay: [30, 120] },
+
+      // 🚑 Urgences & Secours
+      ambulance: { title: 'Intervention médicale', icon: '🚑', severity: 'danger', delay: [10, 30] },
+      fire: { title: 'Incendie', icon: '🔥', severity: 'danger', delay: [45, 120] },
+      hazardousMaterial: { title: 'Matière dangereuse', icon: '☢️', severity: 'danger', delay: [60, 180] },
+      rescueOperation: { title: 'Opération de secours', icon: '🚁', severity: 'danger', delay: [30, 90] },
+
+      // 🛑 Autres Alertes
+      bridgeOpen: { title: 'Pont ouvert', icon: '🌉', severity: 'warning', delay: [15, 45] },
+      ferryDelay: { title: 'Retard de ferry', icon: '⛴️', severity: 'info', delay: [20, 60] },
+      railwayCrossing: { title: 'Passage à niveau', icon: '🚂', severity: 'warning', delay: [5, 15] },
+      schoolZone: { title: 'Zone scolaire', icon: '🏫', severity: 'info', delay: [5, 10] },
+      constructionDetour: { title: 'Déviation chantier', icon: '🚧', severity: 'warning', delay: [15, 30] },
+
+      // Alertes par défaut
+      traffic: { title: 'Trafic', icon: '🚦', severity: 'warning', delay: [10, 20] },
+      weather: { title: 'Météo', icon: '🌤️', severity: 'info', delay: [5, 15] },
+      construction: { title: 'Travaux', icon: '🚧', severity: 'warning', delay: [15, 30] },
+      police: { title: 'Police', icon: '👮', severity: 'info', delay: [5, 10] }
+    };
   }
 
   // Récupérer les alertes météo réelles depuis OpenWeatherMap
