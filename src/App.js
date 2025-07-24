@@ -435,6 +435,7 @@ const App = () => {
         trucks={mockTrucks}
         onAlertClick={handleAlertClick}
         onCloseAlert={handleCloseAlert}
+        onAlertsUpdate={handleAlertsUpdate}
         isOpen={isAlertsOpen}
         onToggle={handleToggleAlertPanel}
       />
