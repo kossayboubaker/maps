@@ -35,8 +35,25 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
     });
   }, [deliveries, searchTerm]);
 
-  // Afficher toutes les livraisons sans pagination
-  const currentDeliveries = filteredDeliveries;
+  // Pagination intelligente
+  const totalPages = Math.ceil(filteredDeliveries?.length / itemsPerPage);
+  const startIndex = currentPage * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentDeliveries = filteredDeliveries?.slice(startIndex, endIndex);
+
+  // Gestion des changements de page
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+  };
+
+  // Reset page à 0 quand la recherche change
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [searchTerm]);
 
   // Statistiques réelles de la flotte connectées aux vraies données
   const fleetStats = useMemo(() => {
