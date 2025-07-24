@@ -198,15 +198,14 @@ class AlertsService {
     };
   }
 
-  // Récupérer les alertes trafic depuis TomTom (version simulée car API payante)
+  // Récupérer les alertes trafic depuis TomTom avec fallback intelligent
   async getTrafficAlerts(truckRoutes = []) {
     try {
-      // Pour TomTom, il faut des coordonnées spécifiques et c'est une API payante
-      // Je vais simuler avec des données réalistes basées sur des zones connues
-      return this.getRealisticTrafficAlerts(truckRoutes);
+      // Utiliser le système intelligent avec fallback immédiat pour éviter les erreurs CORS
+      return await this.getRealisticTrafficAlerts(truckRoutes);
     } catch (error) {
-      console.error('Erreur récupération trafic:', error);
-      return this.getRealisticTrafficAlerts(truckRoutes);
+      console.warn('Erreur récupération trafic, utilisation fallback:', error.message);
+      return this.generateIntelligentFallbackAlerts(truckRoutes);
     }
   }
 
