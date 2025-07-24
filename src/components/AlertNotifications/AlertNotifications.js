@@ -129,10 +129,10 @@ const AlertNotifications = ({
         className="alert-notification-button"
         style={{
           position: 'fixed',
-          top: '140px', // Sous le bouton panneau (80px + 48px + 12px margin)
-          left: '20px', // Même alignement que bouton panneau
+          top: '80px', // Même niveau que bouton panneau
+          right: '20px', // À droite selon screenshot
           zIndex: 2000,
-          width: '48px', // Même taille que bouton panneau
+          width: '48px',
           height: '48px',
           borderRadius: '50%',
           background: getTotalAlerts() > 0 
