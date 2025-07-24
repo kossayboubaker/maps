@@ -43,56 +43,97 @@ const AlertNotifications = ({
     return R * c;
   };
 
-  // Mettre à jour les alertes avec les APIs réelles
+  // Mettre à jour les alertes avec les APIs réelles - système intelligent
   useEffect(() => {
     const updateAlerts = async () => {
       try {
+        console.log('🔄 Mise à jour des alertes depuis APIs...');
         const realAlerts = await fetchRealAlerts();
 
-        // Marquer les nouvelles alertes pour l'ombre
+        // Filtrer les alertes valides et actives
+        const validAlerts = realAlerts.filter(alert =>
+          alert &&
+          alert.id &&
+          alert.type &&
+          alert.position &&
+          alert.isActive !== false
+        );
+
+        // Marquer les nouvelles alertes pour l'animation
         const currentAlertIds = new Set(activeAlerts.map(a => a.id));
         const newIds = new Set();
-        realAlerts.forEach(alert => {
+        validAlerts.forEach(alert => {
           if (!currentAlertIds.has(alert.id)) {
             newIds.add(alert.id);
           }
         });
 
         if (newIds.size > 0) {
+          console.log(`✨ ${newIds.size} nouvelles alertes détectées`);
           setNewAlertIds(newIds);
-          // Retirer l'ombre après 8 secondes
+          // Retirer l'animation après 6 secondes
           setTimeout(() => {
             setNewAlertIds(prev => {
               const updated = new Set(prev);
               newIds.forEach(id => updated.delete(id));
               return updated;
             });
-          }, 8000);
+          }, 6000);
         }
 
-        setActiveAlerts(realAlerts);
+        setActiveAlerts(validAlerts);
 
-        // Notifier le parent des nouvelles alertes VRAIES
+        // Notifier le parent avec les alertes validées
         if (onAlertsUpdate) {
-          onAlertsUpdate(realAlerts);
+          onAlertsUpdate(validAlerts);
         }
+
+        console.log(`✅ ${validAlerts.length} alertes actives`);
+
       } catch (error) {
-        console.warn('Erreur mise à jour alertes:', error.message);
-        // En cas d'erreur, au moins utiliser fallback
+        console.warn('⚠️ Erreur mise à jour alertes:', error.message);
+        // Fallback avec alertes de base en cas d'erreur
+        const fallbackAlerts = [{
+          id: `fallback_${Date.now()}`,
+          type: 'info',
+          title: 'Surveillance active',
+          icon: '📶',
+          location: 'Système',
+          position: [36.8065, 10.1815],
+          description: 'Surveillance du trafic et météo en cours',
+          severity: 'info',
+          delay: 0,
+          affectedRoutes: [],
+          timestamp: new Date().toISOString(),
+          isActive: true,
+          source: 'fallback'
+        }];
+
+        setActiveAlerts(fallbackAlerts);
         if (onAlertsUpdate) {
-          onAlertsUpdate([]);
+          onAlertsUpdate(fallbackAlerts);
         }
       }
     };
 
-    // Mise à jour initiale immédiate
-    updateAlerts();
+    // Délai initial pour permettre aux APIs de s'initialiser
+    const initTimer = setTimeout(updateAlerts, 1500);
 
-    // Mise à jour toutes les 10 minutes pour éviter quota API
-    const interval = setInterval(updateAlerts, 600000);
+    // Mise à jour adaptative selon l'activité
+    const getUpdateInterval = () => {
+      const activeCount = activeAlerts.filter(a => a.severity === 'danger').length;
+      if (activeCount > 2) return 180000; // 3 minutes si alertes critiques
+      if (activeCount > 0) return 300000; // 5 minutes si alertes normales
+      return 600000; // 10 minutes si pas d'alertes critiques
+    };
 
-    return () => clearInterval(interval);
-  }, [trucks, fetchRealAlerts]);
+    const interval = setInterval(updateAlerts, getUpdateInterval());
+
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+    };
+  }, [trucks, fetchRealAlerts, activeAlerts.length]);
 
 
 
@@ -133,24 +174,27 @@ const AlertNotifications = ({
         className="alert-notification-button"
         style={{
           position: 'fixed',
-          top: '80px', // Même niveau que bouton panneau
-          right: '20px', // À droite selon screenshot
+          top: '80px', // Même niveau que bouton panneau selon screenshot
+          right: '20px', // Position droite selon screenshot
           zIndex: 2000,
-          width: '48px',
-          height: '48px',
+          width: '56px',
+          height: '56px',
           borderRadius: '50%',
-          background: getTotalAlerts() > 0 
+          background: getTotalAlerts() > 0
             ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
             : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
-          border: 'none',
+          border: '3px solid rgba(255,255,255,0.8)',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+          boxShadow: getTotalAlerts() > 0 ?
+            '0 12px 40px rgba(239, 68, 68, 0.4), 0 0 20px rgba(239, 68, 68, 0.3)' :
+            '0 8px 25px rgba(107, 114, 128, 0.3)',
           color: 'white',
-          transition: 'all 0.3s ease',
-          animation: getTotalAlerts() > 0 ? 'alertPulse 2s infinite' : 'none'
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          animation: getTotalAlerts() > 0 ? 'alertPulse 2.5s ease-in-out infinite' : 'none',
+          backdropFilter: 'blur(10px)'
         }}
       >
         <div style={{ position: 'relative' }}>
@@ -161,19 +205,21 @@ const AlertNotifications = ({
           {getTotalAlerts() > 0 && (
             <div style={{
               position: 'absolute',
-              top: '-8px',
-              right: '-8px',
-              background: '#ffffff',
+              top: '-6px',
+              right: '-6px',
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
               color: '#ef4444',
               borderRadius: '50%',
-              width: '24px',
-              height: '24px',
+              width: '28px',
+              height: '28px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '12px',
-              fontWeight: 'bold',
-              border: '2px solid #ef4444'
+              fontSize: '13px',
+              fontWeight: '900',
+              border: '3px solid #ef4444',
+              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)',
+              animation: 'badgePulse 3s ease-in-out infinite'
             }}>
               {getTotalAlerts()}
             </div>
@@ -323,10 +369,63 @@ const AlertNotifications = ({
           @keyframes newAlertGlow {
             0%, 100% {
               box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.3);
+              transform: scale(1);
             }
             50% {
-              box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6), 0 0 30px rgba(59, 130, 246, 0.5);
+              box-shadow: 0 15px 40px rgba(59, 130, 246, 0.7), 0 0 35px rgba(59, 130, 246, 0.6);
+              transform: scale(1.02);
             }
+          }
+
+          @keyframes alertPulse {
+            0%, 100% {
+              box-shadow: 0 12px 40px rgba(239, 68, 68, 0.4), 0 0 20px rgba(239, 68, 68, 0.3);
+              transform: scale(1);
+            }
+            50% {
+              box-shadow: 0 18px 50px rgba(239, 68, 68, 0.6), 0 0 30px rgba(239, 68, 68, 0.5);
+              transform: scale(1.05);
+            }
+          }
+
+          @keyframes badgePulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.1);
+            }
+          }
+
+          @keyframes slideInAlert {
+            from {
+              opacity: 0;
+              transform: translateX(100%) scale(0.8);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0) scale(1);
+            }
+          }
+
+          .alert-item {
+            animation: slideInAlert 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .alert-item:hover {
+            transform: translateX(-6px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+          }
+
+          .alert-loading {
+            background: linear-gradient(45deg, #f3f4f6, #e5e7eb, #f3f4f6);
+            background-size: 200% 200%;
+            animation: loadingShimmer 1.8s ease-in-out infinite;
+          }
+
+          @keyframes loadingShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
           }
         `}
       </style>
