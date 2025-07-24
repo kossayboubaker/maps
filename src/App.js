@@ -282,12 +282,17 @@ const App = () => {
   const handleDeliverySelect = (delivery) => {
     setSelectedDelivery(delivery);
 
-    // Focus sur le camion sélectionné dans la carte
-    if (mapInstance && delivery) {
-      mapInstance.flyTo(delivery.position, Math.max(mapInstance.getZoom(), 12), {
+    // Focus sur le camion sélectionné dans la carte avec zoom approprié
+    if (mapInstance && delivery && delivery.position) {
+      mapInstance.flyTo(delivery.position, Math.max(mapInstance.getZoom(), 14), {
         animate: true,
-        duration: 1.5
+        duration: 1.8
       });
+
+      // Fermer le panneau latéral sur mobile pour voir la carte
+      if (window.innerWidth < 768) {
+        setIsAsideOpen(false);
+      }
     }
   };
 
