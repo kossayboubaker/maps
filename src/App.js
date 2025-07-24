@@ -417,7 +417,7 @@ const App = () => {
         onZoomOut={handleZoomOut}
         onMapStyleChange={handleMapStyleChange}
         mapStyle={mapStyle}
-        alertsCount={alerts.length}
+        alertsCount={allAlerts.length} // Compteur basé sur toutes les alertes réelles
         onToggleAlerts={handleToggleAlerts}
         showAlerts={showAlerts}
         selectedTruck={selectedDelivery}
