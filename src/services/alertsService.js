@@ -210,137 +210,206 @@ class AlertsService {
     }
   }
 
-  // Générer des alertes trafic réalistes basées sur les heures et zones
-  getRealisticTrafficAlerts(truckRoutes) {
-    const currentHour = new Date().getHours();
-    const currentDay = new Date().getDay(); // 0 = dimanche, 1 = lundi, etc.
+  // Système intelligent de génération d'alertes trafic avec APIs
+  async getRealisticTrafficAlerts(truckRoutes) {
     const alerts = [];
-    
-    // Zones de trafic problématiques en Tunisie
-    const trafficZones = [
-      {
-        name: 'Centre-ville Tunis',
-        coordinates: [36.8065, 10.1815],
-        peakHours: [7, 8, 9, 17, 18, 19],
-        weekdaysOnly: true
-      },
-      {
-        name: 'Autoroute A1 - Sortie Tunis',
-        coordinates: [36.7200, 10.2100],
-        peakHours: [6, 7, 8, 16, 17, 18, 19],
-        weekdaysOnly: true
-      },
-      {
-        name: 'Port de Sfax',
-        coordinates: [34.7406, 10.7603],
-        peakHours: [8, 9, 10, 14, 15, 16],
-        weekdaysOnly: false
-      },
-      {
-        name: 'Zone industrielle Sousse',
-        coordinates: [35.8256, 10.6369],
-        peakHours: [7, 8, 16, 17],
-        weekdaysOnly: true
-      }
-    ];
-    
-    // Vérifier chaque zone pour les conditions de trafic
-    trafficZones.forEach(zone => {
-      const isWeekend = currentDay === 0 || currentDay === 6;
-      const shouldCheck = !zone.weekdaysOnly || !isWeekend;
-      const isPeakHour = zone.peakHours.includes(currentHour);
-      
-      if (shouldCheck && isPeakHour) {
-        // Probabilité d'embouteillage pendant les heures de pointe
-        const hasTraffic = Math.random() > 0.3; // 70% de chance
-        
-        if (hasTraffic) {
+
+    try {
+      // Utiliser TomTom Traffic API pour les vraies données
+      const trafficData = await this.getTomTomTrafficData();
+
+      // Si l'API fonctionne, traiter les données
+      if (trafficData && trafficData.length > 0) {
+        trafficData.forEach(incident => {
+          const alertType = this.mapTomTomToAlertType(incident.type);
+          const alertInfo = this.alertTypes[alertType] || this.alertTypes.traffic;
+
           const affectedTrucks = truckRoutes.filter(truck => {
             const distance = this.calculateDistance(
               truck.position,
-              zone.coordinates
+              incident.coordinates
             );
-            return distance < 20; // 20km de rayon
+            return distance < incident.radius || 20;
           });
-          
-          const delay = 10 + Math.floor(Math.random() * 20); // 10-30 min
-          const severity = delay > 20 ? 'warning' : 'info';
-          
+
           alerts.push({
-            id: `traffic_${zone.name.replace(/\s+/g, '_')}_${Date.now()}`,
-            type: 'traffic',
-            title: `Trafic - ${zone.name}`,
-            icon: '🚦',
-            location: zone.name,
-            position: zone.coordinates,
-            description: `Embouteillage détecté - Circulation dense`,
-            severity,
-            delay,
+            id: `tomtom_${incident.id}_${Date.now()}`,
+            type: alertType,
+            title: alertInfo.title,
+            icon: alertInfo.icon,
+            location: incident.location,
+            position: incident.coordinates,
+            description: incident.description,
+            severity: alertInfo.severity,
+            delay: incident.delay || this.getRandomDelay(alertInfo.delay),
             affectedRoutes: affectedTrucks.map(truck => truck.truck_id),
             timestamp: new Date().toISOString(),
-            isActive: true
+            isActive: true,
+            source: 'tomtom'
+          });
+        });
+      }
+    } catch (error) {
+      console.warn('TomTom API non disponible, utilisation fallback intelligent');
+    }
+
+    // Fallback intelligent avec données réalistes
+    const fallbackAlerts = this.generateIntelligentFallbackAlerts(truckRoutes);
+    alerts.push(...fallbackAlerts);
+
+    return alerts;
+  }
+
+  // Appel API TomTom pour données trafic réelles
+  async getTomTomTrafficData() {
+    const bbox = '8.0,30.0,12.0,38.0'; // Bounding box Tunisie
+    const url = `${this.TOMTOM_BASE_URL}/incidentDetails?key=${this.TOMTOM_API_KEY}&bbox=${bbox}&fields=incidents&language=fr-FR`;
+
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        return data.incidents?.map(incident => ({
+          id: incident.id,
+          type: incident.properties?.iconCategory || 'accident',
+          coordinates: incident.geometry?.coordinates ?
+            [incident.geometry.coordinates[1], incident.geometry.coordinates[0]] :
+            [36.8065, 10.1815],
+          location: incident.properties?.description || 'Route inconnue',
+          description: incident.properties?.events?.[0]?.description || 'Incident de circulation',
+          delay: incident.properties?.delay || 15,
+          radius: incident.properties?.length || 1000
+        })) || [];
+      }
+    } catch (error) {
+      console.error('Erreur TomTom API:', error);
+    }
+
+    return [];
+  }
+
+  // Mapper les types TomTom vers nos types d'alertes
+  mapTomTomToAlertType(tomtomType) {
+    const mapping = {
+      0: 'accident',
+      1: 'fog',
+      2: 'ice',
+      3: 'roadClosed',
+      4: 'roadworks',
+      5: 'laneClosed',
+      6: 'carStopped',
+      7: 'trafficJam',
+      8: 'maintenance',
+      9: 'hazardousMaterial',
+      10: 'police',
+      11: 'speedTrap',
+      14: 'slowTraffic'
+    };
+
+    return mapping[tomtomType] || 'traffic';
+  }
+
+  // Système de fallback intelligent avec alertes variées
+  generateIntelligentFallbackAlerts(truckRoutes) {
+    const currentHour = new Date().getHours();
+    const currentDay = new Date().getDay();
+    const alerts = [];
+
+    // Zones critiques avec probabilités différentes
+    const zones = [
+      { name: 'Centre-ville Tunis', coords: [36.8065, 10.1815], risk: 0.7 },
+      { name: 'Autoroute A1', coords: [36.7200, 10.2100], risk: 0.5 },
+      { name: 'Port de Sfax', coords: [34.7406, 10.7603], risk: 0.4 },
+      { name: 'Zone industrielle Sousse', coords: [35.8256, 10.6369], risk: 0.6 }
+    ];
+
+    // Types d'alertes possibles avec probabilités
+    const possibleAlerts = [
+      { type: 'trafficJam', probability: 0.3 },
+      { type: 'roadworks', probability: 0.2 },
+      { type: 'accident', probability: 0.1 },
+      { type: 'policeCheck', probability: 0.15 },
+      { type: 'carStopped', probability: 0.2 },
+      { type: 'laneClosed', probability: 0.15 },
+      { type: 'maintenance', probability: 0.1 }
+    ];
+
+    zones.forEach(zone => {
+      // Ajuster probabilité selon heure et jour
+      let adjustedRisk = zone.risk;
+      const isWeekend = currentDay === 0 || currentDay === 6;
+      const isPeakHour = (currentHour >= 7 && currentHour <= 9) || (currentHour >= 17 && currentHour <= 19);
+
+      if (isPeakHour && !isWeekend) adjustedRisk *= 1.5;
+      if (isWeekend) adjustedRisk *= 0.7;
+
+      if (Math.random() < adjustedRisk) {
+        const selectedAlert = possibleAlerts[Math.floor(Math.random() * possibleAlerts.length)];
+        if (Math.random() < selectedAlert.probability) {
+          const alertInfo = this.alertTypes[selectedAlert.type];
+
+          const affectedTrucks = truckRoutes.filter(truck => {
+            const distance = this.calculateDistance(truck.position, zone.coords);
+            return distance < 25;
+          });
+
+          alerts.push({
+            id: `intelligent_${selectedAlert.type}_${zone.name}_${Date.now()}`,
+            type: selectedAlert.type,
+            title: `${alertInfo.title} - ${zone.name}`,
+            icon: alertInfo.icon,
+            location: zone.name,
+            position: zone.coords,
+            description: this.generateContextualDescription(selectedAlert.type, zone.name, currentHour),
+            severity: alertInfo.severity,
+            delay: this.getRandomDelay(alertInfo.delay),
+            affectedRoutes: affectedTrucks.map(truck => truck.truck_id),
+            timestamp: new Date().toISOString(),
+            isActive: true,
+            source: 'intelligent'
           });
         }
       }
     });
-    
-    // Ajouter des alertes de travaux/accidents aléatoirement
-    if (Math.random() > 0.7) { // 30% de chance
-      const workTypes = [
-        {
-          type: 'construction',
-          title: 'Travaux routiers',
-          icon: '🚧',
-          description: 'Travaux de réfection en cours',
-          severity: 'warning',
-          delay: 15
-        },
-        {
-          type: 'accident',
-          title: 'Incident routier',
-          icon: '⚠️',
-          description: 'Véhicule en panne - voie bloquée',
-          severity: 'danger',
-          delay: 25
-        },
-        {
-          type: 'police',
-          title: 'Contrôle police',
-          icon: '👮',
-          description: 'Contrôle de routine',
-          severity: 'info',
-          delay: 5
-        }
-      ];
-      
-      const randomWork = workTypes[Math.floor(Math.random() * workTypes.length)];
-      const randomZone = trafficZones[Math.floor(Math.random() * trafficZones.length)];
-      
-      alerts.push({
-        id: `work_${randomWork.type}_${Date.now()}`,
-        type: randomWork.type,
-        title: randomWork.title,
-        icon: randomWork.icon,
-        location: randomZone.name,
-        position: randomZone.coordinates,
-        description: randomWork.description,
-        severity: randomWork.severity,
-        delay: randomWork.delay,
-        affectedRoutes: truckRoutes
-          .filter(truck => {
-            const distance = this.calculateDistance(
-              truck.position,
-              randomZone.coordinates
-            );
-            return distance < 30;
-          })
-          .map(truck => truck.truck_id),
-        timestamp: new Date().toISOString(),
-        isActive: true
-      });
-    }
-    
+
     return alerts;
+  }
+
+  // Générer descriptions contextuelles
+  generateContextualDescription(alertType, location, hour) {
+    const descriptions = {
+      trafficJam: [
+        `Embouteillage important à ${location}`,
+        `Circulation dense due à l'heure de pointe`,
+        `Ralentissements significatifs observés`
+      ],
+      roadworks: [
+        `Travaux de réfection en cours à ${location}`,
+        `Maintenance routière - circulation alternée`,
+        `Réparation de chaussée en cours`
+      ],
+      accident: [
+        `Accident de circulation signalé à ${location}`,
+        `Véhicule en détresse - voie obstruée`,
+        `Incident routier en cours de traitement`
+      ],
+      policeCheck: [
+        `Contrôle de routine des forces de l'ordre`,
+        `Point de contrôle de sécurité actif`,
+        `Vérification de documents en cours`
+      ]
+    };
+
+    const options = descriptions[alertType] || [`Alerte trafic à ${location}`];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
+  // Générer délai aléatoire dans une fourchette
+  getRandomDelay(delayRange) {
+    if (Array.isArray(delayRange)) {
+      return delayRange[0] + Math.floor(Math.random() * (delayRange[1] - delayRange[0]));
+    }
+    return delayRange || 10;
   }
 
   // Fallback en cas d'erreur API météo
