@@ -71,6 +71,11 @@ const AlertNotifications = ({
         }
 
         setActiveAlerts(realAlerts);
+
+        // Notifier le parent des nouvelles alertes
+        if (onAlertsUpdate) {
+          onAlertsUpdate(realAlerts);
+        }
       } catch (error) {
         console.error('Erreur mise à jour alertes:', error);
       }
