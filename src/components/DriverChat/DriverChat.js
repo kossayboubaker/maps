@@ -9,10 +9,13 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
   const [onlineDrivers, setOnlineDrivers] = useState([]);
   const messagesEndRef = useRef(null);
 
-  // Simuler les conducteurs en ligne
+  // Simuler les conducteurs en ligne (exclure l'utilisateur actuel)
   useEffect(() => {
     const activeDrivers = trucks
-      .filter(truck => truck.state === 'En Route' || truck.state === 'At Destination')
+      .filter(truck =>
+        (truck.state === 'En Route' || truck.state === 'At Destination') &&
+        truck.driver.id !== currentUser.id // Exclure l'utilisateur actuel
+      )
       .map(truck => ({
         id: truck.driver.id,
         name: truck.driver.name,
@@ -21,9 +24,9 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
         lastSeen: new Date(),
         avatar: truck.driver.avatar || '👤'
       }));
-    
+
     setOnlineDrivers(activeDrivers);
-  }, [trucks]);
+  }, [trucks, currentUser.id]);
 
   // Messages prédéfinis pour la démonstration
   useEffect(() => {
@@ -130,8 +133,8 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
           <div className="chat-header-content">
             <div className="chat-icon">💬</div>
             <div>
-              <h3>Discussion Conducteurs</h3>
-              <p>{onlineDrivers.length} conducteur{onlineDrivers.length !== 1 ? 's' : ''} en ligne</p>
+              <h3>Chat Entre Conducteurs</h3>
+              <p>{onlineDrivers.length} autre{onlineDrivers.length !== 1 ? 's' : ''} conducteur{onlineDrivers.length !== 1 ? 's' : ''} disponible{onlineDrivers.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
           <button className="close-chat-btn" onClick={onClose}>✕</button>
@@ -147,7 +150,8 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
               {onlineDrivers.length === 0 ? (
                 <div className="no-drivers">
                   <div className="no-drivers-icon">😴</div>
-                  <p>Aucun conducteur en ligne</p>
+                  <p>Aucun autre conducteur disponible</p>
+                  <small style={{color: '#9ca3af', fontSize: '12px', marginTop: '8px', display: 'block'}}>Les autres conducteurs apparaîtront ici quand ils seront en ligne</small>
                 </div>
               ) : (
                 onlineDrivers.map(driver => (
@@ -176,8 +180,9 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
             {!selectedDriver ? (
               <div className="no-conversation">
                 <div className="no-conversation-icon">💬</div>
-                <h4>Sélectionnez un conducteur</h4>
-                <p>Choisissez un conducteur dans la liste pour commencer une discussion</p>
+                <h4>Discussion entre conducteurs</h4>
+                <p>Sélectionnez un collègue conducteur pour commencer une conversation</p>
+                <small style={{color: '#6b7280', fontSize: '12px', marginTop: '8px'}}>Échangez sur les conditions de route, retards, ou coordinations</small>
               </div>
             ) : (
               <>
