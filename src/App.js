@@ -469,7 +469,7 @@ const App = () => {
           className={`flex-1 min-w-0 overflow-hidden ${isAsideOpen ? '' : 'w-full'}`}
         >
           <MapCanvas
-            deliveries={mockTrucks}
+            deliveries={visibleTrucks}
             selectedDelivery={selectedDelivery}
             onSelectDelivery={handleDeliverySelect}
             alerts={alerts}
