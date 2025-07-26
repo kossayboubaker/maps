@@ -40,11 +40,10 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
 
   const getResponsiveConfig = () => {
     const { width } = screenSize;
-    if (width < 200) return { padding: '2px', gap: '2px', textSize: '6px', iconSize: 8 };
-    if (width < 250) return { padding: '3px', gap: '3px', textSize: '7px', iconSize: 10 };
-    if (width < 320) return { padding: '4px', gap: '4px', textSize: '8px', iconSize: 12 };
-    if (width < 400) return { padding: '6px', gap: '6px', textSize: '9px', iconSize: 14 };
-    return { padding: '8px', gap: '8px', textSize: '10px', iconSize: 16 };
+    if (width < 320) return { padding: '8px', gap: '4px', textSize: '11px', iconSize: 16, borderRadius: '8px' };
+    if (width < 480) return { padding: '10px', gap: '6px', textSize: '12px', iconSize: 18, borderRadius: '10px' };
+    if (width < 768) return { padding: '12px', gap: '8px', textSize: '13px', iconSize: 20, borderRadius: '12px' };
+    return { padding: '16px', gap: '8px', textSize: '14px', iconSize: 22, borderRadius: '14px' };
   };
 
   const responsive = getResponsiveConfig();
@@ -54,22 +53,31 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
       onClick={onSelect}
       style={{
         backgroundColor: isSelected ? '#eff6ff' : '#fff',
-        borderRadius: responsive.gap,
-        boxShadow: isSelected ? '0 4px 12px rgba(59, 130, 246, 0.15)' : '0 1px 2px rgba(0,0,0,0.05)',
+        borderRadius: responsive.borderRadius,
+        boxShadow: isSelected ? '0 8px 25px rgba(59, 130, 246, 0.25)' : '0 2px 8px rgba(0,0,0,0.08)',
         border: isSelected ? '2px solid #3b82f6' : '1px solid #e2e8f0',
         padding: responsive.padding,
         display: 'flex',
         flexDirection: 'column',
         gap: responsive.gap,
-        margin: '2px 0',
-        width: '100%',
-        maxWidth: '100%',
+        margin: '6px 8px',
+        width: 'calc(100% - 16px)',
+        maxWidth: 'calc(100% - 16px)',
         boxSizing: 'border-box',
         overflow: 'hidden',
         wordBreak: 'break-word',
         cursor: onSelect ? 'pointer' : 'default',
-        transition: 'all 0.2s ease',
-        transform: isSelected ? 'translateY(-1px)' : 'translateY(0)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isSelected ? 'translateY(-2px) scale(1.02)' : 'translateY(0) scale(1)',
+        position: 'relative',
+        '::before': {
+          content: '""',
+          position: 'absolute',
+          inset: 0,
+          borderRadius: responsive.borderRadius,
+          background: isSelected ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%)' : 'transparent',
+          zIndex: -1
+        }
       }}
     >
       {/* Header */}
@@ -155,37 +163,65 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
                 gap: '2px',
               }}
             >
-              0h15 ⏱️ {delivery.speed}km/h
+              ⏱️ {delivery.speed || 0}km/h
             </span>
-            <span
+            <div
               style={{
-                fontSize: responsive.textSize,
-                fontWeight: '600',
-                color: '#1976d2',
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                padding: '2px 6px',
+                borderRadius: '6px',
+                backgroundColor: progress >= 90 ? '#dcfce7' : progress >= 50 ? '#fef3c7' : '#fee2e2',
+                border: `1px solid ${progress >= 90 ? '#bbf7d0' : progress >= 50 ? '#fde68a' : '#fecaca'}`
               }}
             >
-              {progress}%
-            </span>
+              <span
+                style={{
+                  fontSize: responsive.textSize,
+                  fontWeight: '600',
+                  color: progress >= 90 ? '#059669' : progress >= 50 ? '#d97706' : '#dc2626',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {progress}%
+              </span>
+            </div>
           </div>
           <div
             style={{
-              height: '2px',
-              backgroundColor: '#e5e7eb',
-              borderRadius: '1px',
-              marginTop: '2px',
+              height: '3px',
+              backgroundColor: '#f1f5f9',
+              borderRadius: '2px',
+              marginTop: '4px',
               overflow: 'hidden',
+              position: 'relative'
             }}
           >
             <div
               style={{
                 width: `${progress}%`,
                 height: '100%',
-                backgroundColor: '#1976d2',
-                borderRadius: '1px',
-                transition: 'width 0.3s ease',
+                background: progress >= 90 ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)' :
+                           progress >= 50 ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)' :
+                           'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)',
+                borderRadius: '2px',
+                transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative'
               }}
-            />
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                  animation: progress > 0 ? 'shimmer 2s infinite' : 'none'
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -231,7 +267,7 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
                 textOverflow: 'ellipsis',
               }}
             >
-              {delivery.destination.address}
+              {typeof delivery.destination === 'string' ? delivery.destination : delivery.destination.address}
             </div>
             <div
               style={{
@@ -242,7 +278,7 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
                 textOverflow: 'ellipsis',
               }}
             >
-              {delivery.destination.city}
+              {typeof delivery.destination === 'string' ? 'Destination' : delivery.destination.city}
             </div>
           </div>
         </div>
@@ -302,19 +338,24 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
             </div>
           </div>
         </div>
-        <span
+        <div
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
             fontSize: responsive.textSize,
             backgroundColor: statusInfo.bg,
             color: statusInfo.color,
-            padding: '1px 4px',
-            borderRadius: '6px',
-            fontWeight: '500',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            fontWeight: '600',
             whiteSpace: 'nowrap',
+            border: `1px solid ${statusInfo.color}20`,
+            boxShadow: `0 2px 4px ${statusInfo.color}15`
           }}
         >
-          {statusInfo.text}
-        </span>
+          <span>{statusInfo.text}</span>
+        </div>
       </div>
     </div>
   );
