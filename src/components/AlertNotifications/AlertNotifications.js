@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './AlertNotifications.css';
 import alertsService from '../../services/alertsService';
+import realTimeAlertsService from '../../services/realTimeAlertsService';
 
 const AlertNotifications = ({
   alerts = [],
@@ -14,12 +15,24 @@ const AlertNotifications = ({
   const [activeAlerts, setActiveAlerts] = useState([]);
   const [newAlertIds, setNewAlertIds] = useState(new Set());
 
-  // Récupérer des alertes réelles depuis les APIs
+  // Récupérer des alertes réelles depuis les APIs améliorées
   const fetchRealAlerts = useCallback(async () => {
     try {
-      // Récupérer toutes les alertes réelles
-      const realAlerts = await alertsService.getAllAlerts(trucks);
-      return realAlerts;
+      // Récupérer alertes depuis les deux systèmes
+      const [standardAlerts, realTimeAlerts] = await Promise.all([
+        alertsService.getAllAlerts(trucks),
+        realTimeAlertsService.getAllRealTimeAlerts(trucks)
+      ]);
+
+      // Combiner et dédoublonner les alertes
+      const allAlerts = [...standardAlerts, ...realTimeAlerts];
+      const uniqueAlerts = allAlerts.filter((alert, index, self) =>
+        index === self.findIndex(a => a.location === alert.location && a.type === alert.type)
+      );
+
+      console.log(`🚨 Alertes combinées: ${standardAlerts.length} standard + ${realTimeAlerts.length} temps réel = ${uniqueAlerts.length} uniques`);
+
+      return uniqueAlerts;
     } catch (error) {
       console.error('Erreur récupération alertes réelles:', error);
       return [];
@@ -107,15 +120,18 @@ const AlertNotifications = ({
       }
     };
 
-    // Délai initial pour permettre aux APIs de s'initialiser
-    const initTimer = setTimeout(updateAlerts, 1500);
+    // Délai initial optimisé pour permettre aux APIs de s'initialiser
+    const initTimer = setTimeout(updateAlerts, 1000);
 
-    // Mise à jour adaptative selon l'activité
+    // Mise à jour intelligente selon l'activité des alertes
     const getUpdateInterval = () => {
-      const activeCount = activeAlerts.filter(a => a.severity === 'danger').length;
-      if (activeCount > 2) return 180000; // 3 minutes si alertes critiques
-      if (activeCount > 0) return 300000; // 5 minutes si alertes normales
-      return 600000; // 10 minutes si pas d'alertes critiques
+      const dangerCount = activeAlerts.filter(a => a.severity === 'danger').length;
+      const realTimeCount = activeAlerts.filter(a => a.realEvent === true).length;
+
+      if (dangerCount > 2) return 120000; // 2 minutes si alertes critiques
+      if (realTimeCount > 0) return 180000; // 3 minutes si alertes temps réel
+      if (activeAlerts.length > 3) return 240000; // 4 minutes si beaucoup d'alertes
+      return 300000; // 5 minutes par défaut
     };
 
     const interval = setInterval(updateAlerts, getUpdateInterval());
@@ -278,7 +294,20 @@ const AlertNotifications = ({
                 <div className="alert-content">
                   <div className="alert-header">
                     <h4>{alert.title}</h4>
-                    <span className="alert-delay">+{alert.delay}min</span>
+                    <div className="alert-badges">
+                      {alert.realEvent && (
+                        <span className="real-time-badge" style={{
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: 'white',
+                          fontSize: '9px',
+                          fontWeight: '700',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          marginRight: '4px'
+                        }}>LIVE</span>
+                      )}
+                      <span className="alert-delay">+{alert.delay}min</span>
+                    </div>
                   </div>
                   <p className="alert-description">{alert.description}</p>
                   <div className="alert-meta">
@@ -287,6 +316,13 @@ const AlertNotifications = ({
                       <span className="alert-routes">
                         🚛 {alert.affectedRoutes.join(', ')}
                       </span>
+                    )}
+                    {alert.city && (
+                      <span className="alert-city" style={{
+                        fontSize: '10px',
+                        color: '#9ca3af',
+                        marginLeft: '8px'
+                      }}>🏢 {alert.city}</span>
                     )}
                   </div>
                 </div>
