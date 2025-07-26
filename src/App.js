@@ -195,7 +195,7 @@ const mockTrucks = [
       name: 'Fatma Gharbi',
       company: 'MediTransport',
       contact: '+216 75 456 789',
-      avatar: '👩‍⚕️'
+      avatar: '👩‍��️'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date(Date.now() + 3600000 * 2).toISOString(),
@@ -278,7 +278,11 @@ const App = () => {
   const [currentRole, setCurrentRole] = useState(roleManager.getCurrentRole());
   const [visibleTrucks, setVisibleTrucks] = useState(mockTrucks);
   const [chatOpen, setChatOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState({ id: 'current_user', name: 'Gestionnaire' });
+  const [currentUser, setCurrentUser] = useState(
+    currentRole === 'conducteur'
+      ? { id: 'driver_current', name: 'Conducteur Actuel' }
+      : { id: 'current_user', name: 'Gestionnaire' }
+  );
 
   // Gestion des changements de rôle
   useEffect(() => {
@@ -286,6 +290,14 @@ const App = () => {
       setCurrentRole(event.detail.role);
       const filteredTrucks = roleManager.filterTrucks(mockTrucks);
       setVisibleTrucks(filteredTrucks);
+
+      // Mettre à jour currentUser selon le rôle
+      if (event.detail.role === 'conducteur') {
+        setCurrentUser({ id: 'driver_current', name: 'Conducteur Actuel' });
+      } else {
+        setCurrentUser({ id: 'current_user', name: 'Gestionnaire' });
+      }
+
       console.log(`🎭 Rôle changé: ${event.detail.role} - ${filteredTrucks.length} camions visibles`);
     };
 
