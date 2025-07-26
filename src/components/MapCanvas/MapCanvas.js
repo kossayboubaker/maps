@@ -323,7 +323,7 @@ const MapCanvas = ({
       weather: { color: '#6B7280', icon: alert.icon || '🌤️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherRain: { color: '#3B82F6', icon: '🌧️', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
       weatherThunderstorm: { color: '#7C3AED', icon: '⛈️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
-      weatherMist: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
+      weatherMist: { color: '#9CA3AF', icon: '🌫���', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
       weatherClear: { color: '#F59E0B', icon: '☀️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
       weatherClouds: { color: '#6B7280', icon: '☁️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherSnow: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
@@ -336,7 +336,7 @@ const MapCanvas = ({
       weatherFlood: { color: '#3B82F6', icon: '🌊', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
       weatherSnowstorm: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
       weatherBlizzard: { color: '#06B6D4', icon: '🌨️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
-      weatherTornado: { color: '#7C3AED', icon: '🌪️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherTornado: { color: '#7C3AED', icon: '🌪��', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
       weatherHurricane: { color: '#7C3AED', icon: '🌀', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
       weatherVolcanic: { color: '#EF4444', icon: '🌋', bgColor: '#FEE2E2', borderColor: '#EF4444' },
       weatherWildfire: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
@@ -497,7 +497,7 @@ const MapCanvas = ({
     }
   }, [mapStyle, map, handleMapStyleChange]);
 
-  // Affichage des camions et alertes avec système amélioré
+  // Affichage des camions et alertes avec système amélioré + gestion des rôles
   useEffect(() => {
     if (!map) return;
 
@@ -508,12 +508,30 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter les camions
-    trucksData.forEach((truck) => {
-      if (!truck.position || truck.position.length < 2) return;
+    // Filtrer les camions selon le rôle utilisateur
+    const visibleTrucks = roleManager.filterTrucks(trucksData);
+    console.log(`🚛 Affichage ${visibleTrucks.length} camions (rôle: ${roleManager.getCurrentRole()})`);
 
-      const marker = L.marker(truck.position, {
-        icon: createTruckIcon(truck),
+    // Ajouter les camions avec positions mises à jour
+    visibleTrucks.forEach((truck) => {
+      // Mettre à jour position selon route réaliste
+      const currentPosition = routeGenerator.getCurrentTruckPosition(
+        truck.truck_id,
+        truck.route_progress || 0
+      );
+
+      const truckPosition = currentPosition || truck.position;
+      if (!truckPosition || truckPosition.length < 2) return;
+
+      // Calculer orientation du camion
+      const bearing = routeGenerator.calculateBearing(
+        truck.truck_id,
+        truck.route_progress || 0
+      );
+
+      const marker = L.marker(truckPosition, {
+        icon: createTruckIcon({...truck, bearing: bearing}),
+        zIndexOffset: 1000 // Camions au-dessus des alertes
       }).addTo(map);
 
       marker.on('mouseover', () => {
