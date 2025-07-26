@@ -36,9 +36,11 @@ const mockTrucks = [
     destination: 'Sfax Centre',
     destinationCoords: [34.7406, 10.7603], // Sfax
     driver: {
+      id: 'driver_001',
       name: 'Ahmed Ben Ali',
       company: 'TransTunisia, LTD',
-      contact: '+216 12 345 678'
+      contact: '+216 12 345 678',
+      avatar: '👨‍💼'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date(Date.now() + 3600000 * 5).toISOString(),
@@ -72,9 +74,11 @@ const mockTrucks = [
     destination: 'Sousse Port',
     destinationCoords: [35.8256, 10.6369],
     driver: {
+      id: 'driver_002',
       name: 'Mohamed Trabelsi',
       company: 'Coastal Logistics',
-      contact: '+216 98 765 432'
+      contact: '+216 98 765 432',
+      avatar: '👨‍🔧'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date().toISOString(),
@@ -109,9 +113,11 @@ const mockTrucks = [
     destination: 'Kairouan Centre',
     destinationCoords: [35.6786, 10.0963],
     driver: {
+      id: 'driver_003',
       name: 'Sami Mansouri',
       company: 'TechTransport',
-      contact: '+216 55 123 456'
+      contact: '+216 55 123 456',
+      avatar: '👨‍💻'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date(Date.now() + 3600000 * 3).toISOString(),
@@ -146,9 +152,11 @@ const mockTrucks = [
     destination: 'Nabeul Industrial',
     destinationCoords: [36.4561, 10.7376],
     driver: {
+      id: 'driver_004',
       name: 'Karim Bouazizi',
       company: 'Heavy Cargo TN',
-      contact: '+216 71 987 654'
+      contact: '+216 71 987 654',
+      avatar: '👷‍♂️'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date(Date.now() + 3600000 * 6).toISOString(),
@@ -183,9 +191,11 @@ const mockTrucks = [
     destination: 'Hôpital Gabes',
     destinationCoords: [33.8869, 10.0982],
     driver: {
+      id: 'driver_005',
       name: 'Fatma Gharbi',
       company: 'MediTransport',
-      contact: '+216 75 456 789'
+      contact: '+216 75 456 789',
+      avatar: '👩‍⚕️'
     },
     last_update: new Date().toISOString(),
     estimatedArrival: new Date(Date.now() + 3600000 * 2).toISOString(),
