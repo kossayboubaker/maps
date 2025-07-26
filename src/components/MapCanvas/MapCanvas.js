@@ -847,23 +847,63 @@ const MapCanvas = ({
                 gap: '12px',
                 marginBottom: '12px'
               }}>
-                <span style={{ fontSize: '32px' }}>{hoveredItem.data.icon}</span>
+                <div style={{
+                  position: 'relative',
+                  fontSize: '32px'
+                }}>
+                  {hoveredItem.data.icon}
+                  {hoveredItem.data.isRealTime && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-4px',
+                      background: '#10b981',
+                      borderRadius: '50%',
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid white',
+                      animation: 'alertPulse 2s infinite'
+                    }}></div>
+                  )}
+                </div>
                 <div>
-                  <h4 style={{ 
-                    margin: 0, 
-                    fontSize: '16px', 
-                    fontWeight: '700', 
-                    color: '#1f2937' 
-                  }}>
-                    {hoveredItem.data.title}
-                  </h4>
-                  <p style={{ 
-                    margin: 0, 
-                    fontSize: '12px', 
-                    color: '#6b7280' 
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                    <h4 style={{
+                      margin: 0,
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      color: '#1f2937'
+                    }}>
+                      {hoveredItem.data.title}
+                    </h4>
+                    {hoveredItem.data.isRealTime && (
+                      <span style={{
+                        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        color: 'white',
+                        fontSize: '8px',
+                        fontWeight: '700',
+                        padding: '2px 4px',
+                        borderRadius: '3px'
+                      }}>LIVE</span>
+                    )}
+                  </div>
+                  <p style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    color: '#6b7280'
                   }}>
                     {hoveredItem.data.location}
                   </p>
+                  {hoveredItem.data.city && (
+                    <p style={{
+                      margin: '2px 0 0 0',
+                      fontSize: '10px',
+                      color: '#9ca3af',
+                      fontWeight: '600'
+                    }}>
+                      🏢 {hoveredItem.data.city}
+                    </p>
+                  )}
                 </div>
               </div>
               
