@@ -323,7 +323,7 @@ const MapCanvas = ({
       weather: { color: '#6B7280', icon: alert.icon || '🌤️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherRain: { color: '#3B82F6', icon: '🌧️', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
       weatherThunderstorm: { color: '#7C3AED', icon: '⛈️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
-      weatherMist: { color: '#9CA3AF', icon: '🌫���', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
+      weatherMist: { color: '#9CA3AF', icon: '🌫️', bgColor: '#F9FAFB', borderColor: '#9CA3AF' },
       weatherClear: { color: '#F59E0B', icon: '☀️', bgColor: '#FEF3C7', borderColor: '#F59E0B' },
       weatherClouds: { color: '#6B7280', icon: '☁️', bgColor: '#F3F4F6', borderColor: '#6B7280' },
       weatherSnow: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
@@ -336,7 +336,7 @@ const MapCanvas = ({
       weatherFlood: { color: '#3B82F6', icon: '🌊', bgColor: '#DBEAFE', borderColor: '#3B82F6' },
       weatherSnowstorm: { color: '#06B6D4', icon: '❄️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
       weatherBlizzard: { color: '#06B6D4', icon: '🌨️', bgColor: '#CFFAFE', borderColor: '#06B6D4' },
-      weatherTornado: { color: '#7C3AED', icon: '🌪��', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
+      weatherTornado: { color: '#7C3AED', icon: '🌪️', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
       weatherHurricane: { color: '#7C3AED', icon: '🌀', bgColor: '#EDE9FE', borderColor: '#7C3AED' },
       weatherVolcanic: { color: '#EF4444', icon: '🌋', bgColor: '#FEE2E2', borderColor: '#EF4444' },
       weatherWildfire: { color: '#EF4444', icon: '🔥', bgColor: '#FEE2E2', borderColor: '#EF4444' },
@@ -628,10 +628,10 @@ const MapCanvas = ({
       }
     });
 
-    // Affichage intelligent des alertes avec gestion améliorée
+    // Affichage intelligent des alertes avec gestion des rôles
     const alertsToShow = allAlerts.length > 0 ? allAlerts : alerts;
     if (alertsToShow && alertsToShow.length > 0) {
-      const filteredAlerts = alertsToShow.filter(alert =>
+      let filteredAlerts = alertsToShow.filter(alert =>
         alert &&
         alert.position &&
         Array.isArray(alert.position) &&
@@ -639,7 +639,10 @@ const MapCanvas = ({
         !deletedAlerts?.includes(alert.id)
       );
 
-      console.log(`🗺️ Affichage ${filteredAlerts.length} alertes sur carte`);
+      // Filtrer selon le rôle utilisateur
+      filteredAlerts = roleManager.filterAlerts(filteredAlerts, visibleTrucks);
+
+      console.log(`🗺️ Affichage ${filteredAlerts.length} alertes sur carte (rôle: ${roleManager.getCurrentRole()})`);
 
       filteredAlerts.forEach((alert, index) => {
         try {
