@@ -361,14 +361,27 @@ const App = () => {
     setIsAlertsOpen(!isAlertsOpen);
   };
 
-  // Callback pour recevoir toutes les alertes générées par les APIs
+  // Callback pour recevoir toutes les alertes générées par les APIs améliorées
   const handleAlertsUpdate = (generatedAlerts) => {
-    // Combiner alertes statiques + vraies alertes APIs
-    const combinedAlerts = [...alerts, ...generatedAlerts];
-    setAllAlerts(combinedAlerts);
+    // Filtrer et combiner alertes avec priorité aux temps réel
+    const realTimeAlerts = generatedAlerts.filter(alert => alert.realEvent === true);
+    const standardAlerts = generatedAlerts.filter(alert => alert.realEvent !== true);
 
-    // Log pour debug compteur
-    console.log(`Compteur alertes mis à jour: ${combinedAlerts.length} (${alerts.length} statiques + ${generatedAlerts.length} APIs)`);
+    // Combiner avec priorité: temps réel > API standard > statiques
+    const combinedAlerts = [...realTimeAlerts, ...standardAlerts, ...alerts];
+
+    // Supprimer doublons par localisation et type
+    const uniqueAlerts = combinedAlerts.filter((alert, index, self) =>
+      index === self.findIndex(a =>
+        a.location === alert.location &&
+        a.type === alert.type
+      )
+    );
+
+    setAllAlerts(uniqueAlerts);
+
+    // Log détaillé pour debug compteur
+    console.log(`🎯 Compteur alertes mis à jour: ${uniqueAlerts.length} total (${realTimeAlerts.length} temps réel + ${standardAlerts.length} standard + ${alerts.length} statiques)`);
   };
 
   // Simuler des mises à jour d'alertes en temps réel
