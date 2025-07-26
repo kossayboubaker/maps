@@ -4,6 +4,7 @@ import DeliveryList from './components/DeliveryList/DeliveryList.js';
 import MapCanvas from './components/MapCanvas/MapCanvas.js';
 import AdvancedMapControls from './components/AdvancedMapControls/AdvancedMapControls.js';
 import AlertNotifications from './components/AlertNotifications/AlertNotifications.js';
+import realTimeAlertsService from './services/realTimeAlertsService';
 
 const mockTrucks = [
   {
