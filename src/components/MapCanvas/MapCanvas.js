@@ -39,16 +39,38 @@ const MapCanvas = ({
 
 
 
-  // Récupérer vraie route depuis TomTom Routing API
+  // Système de cache pour éviter les appels API redondants
+  const routeCache = useRef(new Map());
+  const lastApiCall = useRef(0);
+  const API_COOLDOWN = 5000; // 5 secondes entre les appels
+
+  // Récupérer vraie route avec système de cache et gestion d'erreurs améliorée
   const getTomTomRoute = async (startCoord, endCoord) => {
+    const cacheKey = `${startCoord[0]},${startCoord[1]}-${endCoord[0]},${endCoord[1]}`;
+
+    // Vérifier le cache d'abord
+    if (routeCache.current.has(cacheKey)) {
+      console.log('📦 Route récupérée depuis le cache');
+      return routeCache.current.get(cacheKey);
+    }
+
+    // Respecter le cooldown API
+    const now = Date.now();
+    if (now - lastApiCall.current < API_COOLDOWN) {
+      console.log('⏱️ Cooldown API actif, utilisation du fallback');
+      return getRealRoute(startCoord, endCoord);
+    }
+
     const TOMTOM_API_KEY = 'EYzVkdZCbYKTsmoxBiz17rpTQnN3qxz0';
     const startLatLng = `${startCoord[0]},${startCoord[1]}`;
     const endLatLng = `${endCoord[0]},${endCoord[1]}`;
 
     try {
+      lastApiCall.current = now;
+
       const response = await Promise.race([
         fetch(`https://api.tomtom.com/routing/1/calculateRoute/${startLatLng}:${endLatLng}/json?key=${TOMTOM_API_KEY}&travelMode=truck&traffic=true&routeType=fastest&avoid=unpavedRoads&vehicleMaxSpeed=90&vehicleWeight=15000`),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 6000))
       ]);
 
       if (response.ok) {
@@ -70,17 +92,30 @@ const MapCanvas = ({
           );
 
           if (isValidRoute && route.length > 0) {
-            console.log(`TomTom route réelle récupérée: ${route.length} points`);
+            console.log(`✅ TomTom route réelle récupérée: ${route.length} points`);
+            // Mettre en cache pour 30 minutes
+            routeCache.current.set(cacheKey, route);
+            setTimeout(() => routeCache.current.delete(cacheKey), 1800000);
             return route;
           }
         }
+      } else if (response.status === 429) {
+        console.warn('🚫 TomTom API rate limit atteint - utilisation cache/fallback');
+        // Augmenter le cooldown en cas de rate limit
+        lastApiCall.current = now + API_COOLDOWN * 3;
+      } else {
+        console.warn(`⚠️ TomTom API erreur ${response.status}`);
       }
     } catch (error) {
-      console.warn('TomTom Routing API indisponible:', error.message);
+      console.warn('🔄 TomTom API indisponible, fallback activé:', error.message);
     }
 
     // Fallback vers route intelligente terrestre
-    return getRealRoute(startCoord, endCoord);
+    const fallbackRoute = getRealRoute(startCoord, endCoord);
+    // Mettre le fallback en cache aussi
+    routeCache.current.set(cacheKey, fallbackRoute);
+    setTimeout(() => routeCache.current.delete(cacheKey), 900000); // 15 min pour fallback
+    return fallbackRoute;
   };
 
   const getRealRoute = (startCoord, endCoord, waypoints = []) => {
@@ -147,8 +182,13 @@ const MapCanvas = ({
   const generateRealRoutes = useCallback(async () => {
     const routesMap = {};
 
-    // Traiter les routes en parallèle avec TomTom API
-    const routePromises = trucksData.map(async (truck) => {
+    // Limiter le nombre d'appels simultanés pour éviter le rate limiting
+    const MAX_CONCURRENT_CALLS = 2;
+    const routePromises = [];
+
+    for (let i = 0; i < trucksData.length; i += MAX_CONCURRENT_CALLS) {
+      const batch = trucksData.slice(i, i + MAX_CONCURRENT_CALLS);
+      const batchPromises = batch.map(async (truck) => {
       let startCoord, endCoord, waypoints = [];
 
       switch (truck.truck_id) {
@@ -177,42 +217,49 @@ const MapCanvas = ({
           endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
       }
 
-      // Essayer TomTom API d'abord, puis fallback
-      try {
-        const tomtomRoute = await getTomTomRoute(startCoord, endCoord);
-        return { truckId: truck.truck_id, route: tomtomRoute };
-      } catch (error) {
-        console.warn(`Fallback route pour ${truck.truck_id}:`, error.message);
+        // Priorité au générateur de routes intégré pour éviter les appels API excessifs
+        const routeInfo = routeGenerator.generateRouteWithProgress(truck.truck_id, 0);
+        if (routeInfo && routeInfo.fullRoute) {
+          console.log(`🎯 Route pré-générée utilisée pour ${truck.truck_id}`);
+          return { truckId: truck.truck_id, route: routeInfo.fullRoute };
+        }
 
-        // Fallback avec waypoints prédéfinis
-        const fallbackWaypoints = {
-          'TN-001': [[36.7500, 10.1200], [36.3000, 10.0000], [35.9000, 9.9500], [35.5000, 10.2000]],
-          'TN-002': [[36.7000, 10.0800], [36.5000, 10.0000], [36.2000, 10.1000]],
-          'TN-003': [[36.3500, 10.0800], [36.2000, 10.0500], [36.0000, 10.0000]],
-          'TN-004': [[36.7000, 10.1500], [36.6000, 10.2000], [36.5500, 10.4000]],
-          'TN-005': [[34.6500, 10.5000], [34.4000, 10.3000], [34.2000, 10.2000]]
-        };
+        // Essayer TomTom API seulement si pas de route pré-générée
+        try {
+          const tomtomRoute = await getTomTomRoute(startCoord, endCoord);
+          return { truckId: truck.truck_id, route: tomtomRoute };
+        } catch (error) {
+          console.warn(`🔄 Fallback route pour ${truck.truck_id}:`, error.message);
 
-        waypoints = fallbackWaypoints[truck.truck_id] || [];
-        const fallbackRoute = getRealRoute(startCoord, endCoord, waypoints);
-        return { truckId: truck.truck_id, route: fallbackRoute };
-      }
-    });
+          // Fallback avec waypoints prédéfinis
+          const fallbackWaypoints = {
+            'TN-001': [[36.7500, 10.1200], [36.3000, 10.0000], [35.9000, 9.9500], [35.5000, 10.2000]],
+            'TN-002': [[36.7000, 10.0800], [36.5000, 10.0000], [36.2000, 10.1000]],
+            'TN-003': [[36.3500, 10.0800], [36.2000, 10.0500], [36.0000, 10.0000]],
+            'TN-004': [[36.7000, 10.1500], [36.6000, 10.2000], [36.5500, 10.4000]],
+            'TN-005': [[34.6500, 10.5000], [34.4000, 10.3000], [34.2000, 10.2000]]
+          };
 
-    try {
-      const results = await Promise.all(routePromises);
-      results.forEach(result => {
+          waypoints = fallbackWaypoints[truck.truck_id] || [];
+          const fallbackRoute = getRealRoute(startCoord, endCoord, waypoints);
+          return { truckId: truck.truck_id, route: fallbackRoute };
+        }
+      });
+
+      // Traitement par batch avec délai
+      const batchResults = await Promise.all(batchPromises);
+      batchResults.forEach(result => {
         routesMap[result.truckId] = result.route;
       });
-    } catch (error) {
-      console.warn('Erreur génération routes:', error.message);
-      // Fallback final
-      trucksData.forEach(truck => {
-        const startCoord = truck.pickup?.coordinates || truck.position;
-        const endCoord = truck.destinationCoords || truck.destination?.coordinates || truck.position;
-        routesMap[truck.truck_id] = getRealRoute(startCoord, endCoord);
-      });
+
+      // Délai entre les batches pour respecter les limites API
+      if (i + MAX_CONCURRENT_CALLS < trucksData.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
+
+    // Le traitement est déjà fait dans la boucle ci-dessus
+    console.log(`📍 ${Object.keys(routesMap).length} routes générées avec système de cache`);
 
     return routesMap;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -456,11 +503,14 @@ const MapCanvas = ({
       onMapReady(leafletMap);
     }
 
-    // Générer les routes réelles après initialisation avec TomTom API
+    // Générer les routes avec le système amélioré et cache
     setTimeout(async () => {
       try {
         const routes = await generateRealRoutes();
         setTrucksData(prev => prev.map(truck => {
+          // Priorité: routes générées > routes par défaut
+          const routeToUse = routes[truck.truck_id] || routeGenerator.generateRouteWithProgress(truck.truck_id, 0)?.fullRoute;
+
           const fallbackRoute = [
             truck.position,
             truck.destinationCoords || truck.destination?.coordinates || truck.position
@@ -468,21 +518,26 @@ const MapCanvas = ({
 
           return {
             ...truck,
-            realRoute: routes[truck.truck_id] || fallbackRoute
+            realRoute: routeToUse || fallbackRoute
           };
         }));
+        console.log('✅ Toutes les routes initialisées avec succès');
       } catch (error) {
-        console.warn('Erreur routes TomTom, utilisation fallback');
-        // Routes par défaut si TomTom échoue
+        console.warn('🔄 Erreur routes, utilisation générateur intégré');
+        // Utiliser le générateur de routes intégré en cas d'échec complet
         setTrucksData(prev => prev.map(truck => {
+          const routeInfo = routeGenerator.generateRouteWithProgress(truck.truck_id, 0);
           const fallbackRoute = [
             truck.position,
             truck.destinationCoords || truck.destination?.coordinates || truck.position
           ];
-          return { ...truck, realRoute: fallbackRoute };
+          return {
+            ...truck,
+            realRoute: routeInfo?.fullRoute || fallbackRoute
+          };
         }));
       }
-    }, 500);
+    }, 100); // Réduction du délai
 
     return () => {
       leafletMap.remove();
