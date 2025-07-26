@@ -34,8 +34,27 @@ const AlertNotifications = ({
 
       return uniqueAlerts;
     } catch (error) {
-      console.error('Erreur récupération alertes réelles:', error);
-      return [];
+      console.error('⚠️ Erreur récupération alertes réelles:', error);
+
+      // Fallback avec alertes de base en cas d'erreur de réseau/CORS
+      return [
+        {
+          id: `fallback_network_${Date.now()}`,
+          type: 'info',
+          title: 'Surveillance active',
+          icon: '📶',
+          location: 'Système de surveillance',
+          position: [36.8065, 10.1815],
+          description: 'Surveillance du trafic et météo (mode sécurisé)',
+          severity: 'info',
+          delay: 0,
+          affectedRoutes: [],
+          timestamp: new Date().toISOString(),
+          isActive: true,
+          source: 'network_fallback',
+          realEvent: false
+        }
+      ];
     }
   }, [trucks]);
 
