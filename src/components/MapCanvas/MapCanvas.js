@@ -495,11 +495,11 @@ const MapCanvas = ({
     }
   }, [mapStyle, map, handleMapStyleChange]);
 
-  // Affichage des camions et alertes
+  // Affichage des camions et alertes avec système amélioré
   useEffect(() => {
     if (!map) return;
 
-    // Nettoyer les marqueurs existants
+    // Nettoyer uniquement les marqueurs dynamiques (garder la carte de base)
     map.eachLayer((layer) => {
       if (layer instanceof L.Marker || layer instanceof L.Polyline || layer instanceof L.CircleMarker) {
         map.removeLayer(layer);
@@ -530,10 +530,15 @@ const MapCanvas = ({
 
       marker.on('click', () => {
         onSelectDelivery(truck);
+
+        // Animation de suivi améliorée
         map.flyTo(truck.position, Math.max(map.getZoom(), 13), {
           animate: true,
-          duration: 1.2
+          duration: 1.5,
+          easeLinearity: 0.25
         });
+
+        console.log(`🚛 Camion sélectionné: ${truck.truck_id} - Suivi activé: ${followTruck}`);
       });
 
       // Routes
