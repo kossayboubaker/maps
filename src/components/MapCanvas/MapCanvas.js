@@ -917,6 +917,43 @@ const MapCanvas = ({
               box-shadow: 0 8px 30px rgba(0,0,0,0.35);
             }
           }
+
+          @keyframes alertFocus {
+            0%, 100% {
+              transform: scale(1);
+              filter: brightness(1);
+            }
+            25% {
+              transform: scale(1.3);
+              filter: brightness(1.5);
+            }
+            50% {
+              transform: scale(1.1);
+              filter: brightness(1.2);
+            }
+            75% {
+              transform: scale(1.2);
+              filter: brightness(1.3);
+            }
+          }
+
+          @keyframes truckSelected {
+            0%, 100% {
+              transform: scale(1) rotate(0deg);
+            }
+            50% {
+              transform: scale(1.15) rotate(5deg);
+            }
+          }
+
+          .leaflet-marker-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .leaflet-marker-icon:hover {
+            transform: scale(1.1);
+            filter: brightness(1.1);
+          }
         `}
       </style>
     </div>
