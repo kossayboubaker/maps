@@ -49,8 +49,68 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
   const responsive = getResponsiveConfig();
 
   return (
-    <div
-      onClick={onSelect}
+    <>
+      <style>
+        {`
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+
+          .delivery-card {
+            position: relative;
+            overflow: hidden;
+          }
+
+          .delivery-card:hover {
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 12px 35px rgba(59, 130, 246, 0.35) !important;
+          }
+
+          .delivery-card.selected::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4, #10b981);
+            background-size: 400% 400%;
+            border-radius: inherit;
+            z-index: -2;
+            animation: gradientShift 3s ease infinite;
+          }
+
+          @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+          }
+
+          .eco-badge {
+            position: relative;
+            overflow: hidden;
+          }
+
+          .eco-badge.eco-on::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: ecoShine 2s infinite;
+          }
+
+          @keyframes ecoShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+          }
+        `}
+      </style>
+      <div
+        className={`delivery-card ${isSelected ? 'selected' : ''}`}
+        onClick={onSelect}
       style={{
         backgroundColor: isSelected ? '#eff6ff' : '#fff',
         borderRadius: responsive.borderRadius,
@@ -83,33 +143,59 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: responsive.gap }}>
         <span
+          className={`eco-badge ${delivery.ecoMode ? 'eco-on' : ''}`}
           style={{
             fontSize: responsive.textSize,
-            padding: '1px 4px',
-            borderRadius: '10px',
-            fontWeight: '500',
-            backgroundColor: delivery.ecoMode ? '#d1fae5' : '#e5e7eb',
-            color: delivery.ecoMode ? '#065f46' : '#4b5563',
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontWeight: '600',
+            backgroundColor: delivery.ecoMode ? '#d1fae5' : '#f3f4f6',
+            color: delivery.ecoMode ? '#065f46' : '#6b7280',
             whiteSpace: 'nowrap',
             lineHeight: 1,
+            border: delivery.ecoMode ? '1px solid #10b981' : '1px solid #d1d5db',
+            boxShadow: delivery.ecoMode ? '0 2px 4px rgba(16, 185, 129, 0.2)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '2px'
           }}
         >
-          Eco {delivery.ecoMode ? 'ON' : 'OFF'}
+          {delivery.ecoMode ? '🌿' : '⚡'} {delivery.ecoMode ? 'ECO' : 'STD'}
         </span>
-        <span
+        <div
           style={{
-            fontSize: responsive.textSize,
-            fontWeight: '600',
-            color: '#1976d2',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
             flex: 1,
-            textAlign: 'right',
+            justifyContent: 'flex-end'
           }}
         >
-          {delivery.id}
-        </span>
+          <span
+            style={{
+              fontSize: responsive.textSize,
+              fontWeight: '700',
+              color: '#1e40af',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              textShadow: '0 1px 2px rgba(30, 64, 175, 0.1)'
+            }}
+          >
+            {delivery.truck_id || delivery.id}
+          </span>
+          <div
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: delivery.state === 'En Route' ? '#10b981' :
+                             delivery.state === 'At Destination' ? '#8b5cf6' :
+                             delivery.state === 'Maintenance' ? '#f59e0b' : '#6b7280',
+              animation: delivery.state === 'En Route' ? 'pulse 2s infinite' : 'none'
+            }}
+          />
+        </div>
       </div>
 
       {/* Main Content */}
@@ -298,10 +384,10 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: responsive.gap, minWidth: 0 }}>
           <div
             style={{
-              width: responsive.iconSize,
-              height: responsive.iconSize,
+              width: responsive.iconSize + 4,
+              height: responsive.iconSize + 4,
               borderRadius: '50%',
-              backgroundColor: '#1976d2',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -309,9 +395,25 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
               color: 'white',
               fontWeight: 'bold',
               flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(59, 130, 246, 0.3)',
+              border: '2px solid white',
+              position: 'relative'
             }}
           >
-            {delivery.driver.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+            {delivery.driver?.avatar || delivery.driver.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: -1,
+                right: -1,
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                border: '2px solid white',
+                animation: 'pulse 2s infinite'
+              }}
+            />
           </div>
           <div style={{ minWidth: 0 }}>
             <div
@@ -358,6 +460,7 @@ const DeliveryCard = ({ delivery, isSelected = false, onSelect }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
