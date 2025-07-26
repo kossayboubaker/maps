@@ -598,10 +598,7 @@ const MapCanvas = ({
           // Créer la polyline
           const routeLine = L.polyline(routeInfo.fullRoute, lineStyle).addTo(map);
 
-          // Ajouter animation CSS pour trajets actifs sélectionnés
-          if (isSelected && truck.state === 'En Route') {
-            routeLine.getElement()?.classList.add('animated-route');
-          }
+          // Pas d'animation pour les trajectoires (performance améliorée)
 
           // Points d'étapes pour le camion sélectionné
           if (isSelected) {
@@ -1030,19 +1027,7 @@ const MapCanvas = ({
             filter: brightness(1.1);
           }
 
-          /* Animations pour trajectoires de camions */
-          .animated-route {
-            animation: routeFlow 3s linear infinite;
-          }
-
-          @keyframes routeFlow {
-            0% {
-              stroke-dasharray: 0, 20;
-            }
-            100% {
-              stroke-dasharray: 20, 0;
-            }
-          }
+          /* Trajectoires statiques - animations supprimées */
 
           /* Amélioration visuelle des lignes de route */
           .leaflet-interactive {
