@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import routeGenerator from '../../services/routeGenerator';
+import roleManager from '../../services/roleManager';
 
 const WEATHER_API_KEY = '4437791bbdc183036e4e04dc15c92cb8';
 
@@ -303,7 +305,7 @@ const MapCanvas = ({
   }, [selectedDelivery, alerts, map]);
 
   const createAlertIcon = (alert) => {
-    // Styles complètes pour tous les types d'alertes selon description
+    // Styles complètes pour tous les types d'alertes (TAILLE RÉDUITE)
     const alertStyles = {
       // Trafic & Accidents
       accident: { color: '#EF4444', icon: '⚠️', bgColor: '#FEE2E2', borderColor: '#EF4444' },
@@ -349,25 +351,25 @@ const MapCanvas = ({
 
     const style = alertStyles[alert.type] || alertStyles.accident;
 
-    // Taille adaptative selon sévérité
-    const size = alert.severity === 'danger' ? 48 : alert.severity === 'warning' ? 44 : 40;
-    const fontSize = alert.severity === 'danger' ? 24 : alert.severity === 'warning' ? 22 : 20;
+    // TAILLE RÉDUITE pour ne pas masquer les camions (30% plus petit)
+    const baseSize = alert.severity === 'danger' ? 28 : alert.severity === 'warning' ? 26 : 24;
+    const fontSize = alert.severity === 'danger' ? 14 : alert.severity === 'warning' ? 13 : 12;
 
     return L.divIcon({
       html: `
         <div style="
-          width: ${size}px;
-          height: ${size}px;
+          width: ${baseSize}px;
+          height: ${baseSize}px;
           background: linear-gradient(135deg, ${style.bgColor} 0%, ${style.bgColor}CC 100%);
-          border: 3px solid ${style.borderColor};
+          border: 2px solid ${style.borderColor};
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: ${fontSize}px;
-          box-shadow: 0 6px 20px rgba(0,0,0,0.25), 0 0 15px ${style.borderColor}40;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.2);
           animation: alertPulse 2.5s ease-in-out infinite;
-          backdrop-filter: blur(5px);
+          backdrop-filter: blur(3px);
           position: relative;
           overflow: hidden;
         ">
@@ -381,8 +383,8 @@ const MapCanvas = ({
         </div>
       `,
       className: '',
-      iconSize: [size, size],
-      iconAnchor: [size / 2, size / 2],
+      iconSize: [baseSize, baseSize],
+      iconAnchor: [baseSize / 2, baseSize / 2],
     });
   };
 
@@ -541,53 +543,69 @@ const MapCanvas = ({
         console.log(`🚛 Camion sélectionné: ${truck.truck_id} - Suivi activé: ${followTruck}`);
       });
 
-      // Routes
-      if (showRoutes && truck.realRoute && truck.realRoute.length > 1) {
-        const routeColor = selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? '#3B82F6' :
-                          truck.state === 'En Route' ? '#10B981' : '#8B5CF6';
+      // ROUTES AMÉLIORÉES avec générateur de trajectoires réalistes
+      if (showRoutes) {
+        const routeInfo = routeGenerator.generateRouteWithProgress(
+          truck.truck_id,
+          truck.route_progress || 0
+        );
 
-        L.polyline(truck.realRoute, {
-          color: routeColor,
-          weight: selectedDelivery && selectedDelivery.truck_id === truck.truck_id ? 6 : 4,
-          opacity: 0.8,
-          lineCap: 'round',
-          lineJoin: 'round',
-          dashArray: truck.state === 'En Route' ? null : '12, 8',
-        }).addTo(map);
+        if (routeInfo && routeInfo.fullRoute && routeInfo.fullRoute.length > 1) {
+          const isSelected = selectedDelivery && selectedDelivery.truck_id === truck.truck_id;
 
-        if (selectedDelivery && selectedDelivery.truck_id === truck.truck_id) {
-          // Marqueurs de départ et arrivée avec plus d'informations
-          L.circleMarker(truck.realRoute[0], {
-            radius: 10,
-            color: '#10B981',
-            fillColor: '#10B981',
-            fillOpacity: 0.8,
-            weight: 4,
-            stroke: true,
-            strokeColor: '#fff',
-          }).addTo(map).bindPopup(`
-            <div style="text-align: center; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-              <strong>🟢 Point de Départ</strong><br>
-              <div style="margin: 4px 0; font-size: 13px;">${truck.pickup?.address || 'Départ'}</div>
-              <div style="font-size: 11px; color: #6b7280;">📍 ${truck.pickup?.city || ''}</div>
-            </div>
-          `);
+          // Couleur selon état (BLEU pour actif, VERT pour terminé)
+          let routeColor = routeInfo.color;
+          if (truck.state === 'En Route') {
+            routeColor = '#1e90ff'; // Bleu pour trajets actifs
+          } else if (truck.state === 'At Destination') {
+            routeColor = '#22c55e'; // Vert pour trajets terminés
+          } else if (truck.state === 'Maintenance') {
+            routeColor = '#f59e0b'; // Orange pour maintenance
+          }
 
-          L.circleMarker(truck.realRoute[truck.realRoute.length - 1], {
-            radius: 10,
-            color: '#EF4444',
-            fillColor: '#EF4444',
-            fillOpacity: 0.8,
-            weight: 4,
-            stroke: true,
-            strokeColor: '#fff',
-          }).addTo(map).bindPopup(`
-            <div style="text-align: center; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-              <strong>🔴 Destination</strong><br>
-              <div style="margin: 4px 0; font-size: 13px;">${truck.destination || 'Arrivée'}</div>
-              <div style="font-size: 11px; color: #6b7280;">🕰️ ETA: ${new Date(truck.estimatedArrival).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</div>
-            </div>
-          `);
+          // Style de ligne selon état
+          const lineStyle = {
+            color: routeColor,
+            weight: isSelected ? 6 : 4,
+            opacity: truck.state === 'At Destination' ? 0.7 : 0.9,
+            lineCap: 'round',
+            lineJoin: 'round'
+          };
+
+          // Ligne discontinue pour trajets terminés
+          if (truck.state === 'At Destination') {
+            lineStyle.dashArray = '12, 8';
+          }
+
+          // Créer la polyline
+          const routeLine = L.polyline(routeInfo.fullRoute, lineStyle).addTo(map);
+
+          // Ajouter animation CSS pour trajets actifs sélectionnés
+          if (isSelected && truck.state === 'En Route') {
+            routeLine.getElement()?.classList.add('animated-route');
+          }
+
+          // Points d'étapes pour le camion sélectionné
+          if (isSelected) {
+            const markers = routeGenerator.createRouteMarkers({
+              ...routeInfo,
+              truck: truck
+            });
+
+            markers.forEach(markerInfo => {
+              L.circleMarker(markerInfo.position, {
+                radius: markerInfo.type === 'waypoint' ? 6 : 8,
+                color: markerInfo.type === 'start' ? '#10B981' :
+                       markerInfo.type === 'end' ? '#EF4444' : '#3B82F6',
+                fillColor: markerInfo.type === 'start' ? '#10B981' :
+                           markerInfo.type === 'end' ? '#EF4444' : '#3B82F6',
+                fillOpacity: 0.8,
+                weight: 3,
+                stroke: true,
+                strokeColor: '#fff',
+              }).addTo(map).bindPopup(markerInfo.popup);
+            });
+          }
         }
       }
     });
