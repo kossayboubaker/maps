@@ -299,8 +299,7 @@ class RealTimeAlertsService {
   // Alertes événementielles basées sur actualités/incidents réels
   generateEventBasedAlerts(trucks) {
     const alerts = [];
-    const currentTime = new Date();
-    const currentHour = currentTime.getHours();
+    const currentHour = new Date().getHours();
     
     // Événements typiques selon période de la journée
     const timeBasedEvents = [
