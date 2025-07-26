@@ -168,7 +168,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden px-2 space-y-1" style={{ maxHeight: 'calc(100vh - 350px)' }}>
+      <div className="flex-1 overflow-hidden px-2 space-y-2" style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
             <DeliveryCard
@@ -211,8 +211,9 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
           className="bg-background border-t border-border flex items-center justify-between flex-shrink-0"
           style={{
             margin: 0,
-            padding: '8px 12px',
-            minHeight: '40px'
+            padding: '6px 12px 0px 12px',
+            minHeight: '36px',
+            borderBottom: 'none'
           }}
         >
           <button
