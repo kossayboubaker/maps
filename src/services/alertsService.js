@@ -106,7 +106,7 @@ class AlertsService {
       try {
         const response = await Promise.race([
           fetch(`${this.OPENWEATHER_BASE_URL}/weather?lat=${singleCity.lat}&lon=${singleCity.lon}&appid=${this.OPENWEATHER_API_KEY}&units=metric&lang=fr`),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 8000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout météo')), 8000))
         ]);
 
         if (response.ok) {
@@ -119,13 +119,22 @@ class AlertsService {
           // Sauvegarder en cache
           localStorage.setItem(cacheKey, JSON.stringify(alerts));
           localStorage.setItem(cacheTime, Date.now().toString());
+          console.log('✅ Données météo récupérées avec succès');
 
         } else if (response.status === 429) {
-          console.warn('API météo quota dépassé (429), fallback activé');
+          console.warn('⚠️ API météo quota dépassé (429), fallback activé');
+          return this.getFallbackWeatherAlerts(truckRoutes);
+        } else {
+          console.warn(`⚠️ API météo erreur ${response.status}, fallback activé`);
           return this.getFallbackWeatherAlerts(truckRoutes);
         }
       } catch (cityError) {
-        console.warn(`Météo API indisponible:`, cityError.message);
+        console.warn(`⚠️ Météo API indisponible (${cityError.message}), utilisation fallback`);
+        // En cas d'erreur réseau/CORS, utiliser fallback immédiatement
+        if (cityError.message.includes('Failed to fetch') || cityError.message.includes('CORS')) {
+          console.warn('🚫 CORS ou erreur réseau détectée, passage en mode offline');
+          return this.getFallbackWeatherAlerts(truckRoutes);
+        }
       }
     } catch (error) {
       console.warn('Erreur météo générale:', error.message);
@@ -497,7 +506,7 @@ class AlertsService {
       allAlerts.push(...realisticAlerts);
 
     } catch (error) {
-      console.warn('Syst��me trafic indisponible, fallback activé');
+      console.warn('Système trafic indisponible, fallback activé');
       allAlerts.push(...this.generateBasicFallbackAlerts(truckRoutes));
     }
     
