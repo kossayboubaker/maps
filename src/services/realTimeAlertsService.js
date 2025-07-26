@@ -101,7 +101,6 @@ class RealTimeAlertsService {
   // Système d'alertes géolocalisées en temps réel
   async generateRealTimeAlerts(trucks = []) {
     const alerts = [];
-    const currentTime = Date.now();
     
     try {
       // 1. Générer alertes trafic basées sur données réelles tunisiennes
