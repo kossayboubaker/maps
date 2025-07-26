@@ -444,7 +444,7 @@ const App = () => {
       {/* Nouveau système AlertNotifications intelligent */}
       <AlertNotifications
         alerts={alerts}
-        trucks={mockTrucks}
+        trucks={visibleTrucks}
         onAlertClick={handleAlertClick}
         onCloseAlert={handleCloseAlert}
         onAlertsUpdate={handleAlertsUpdate}
