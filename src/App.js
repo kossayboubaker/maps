@@ -457,12 +457,12 @@ const App = () => {
           className={`transition-all duration-300 ${isAsideOpen ? 'w-full max-w-[280px] xxs:max-w-[300px] xs:max-w-[320px] xs2:max-w-[340px] sm:max-w-[360px] sm2:max-w-[380px] md:max-w-[400px]' : 'w-0'} bg-background border-r border-border flex-shrink-0 overflow-hidden`}
         >
           <DeliveryList
-            deliveries={mockTrucks}
+            deliveries={visibleTrucks}
             searchTerm={searchTerm}
             onSearchChange={handleSearchChange}
             onSelectDelivery={handleDeliverySelect}
             selectedDelivery={selectedDelivery}
-            alerts={alerts}
+            alerts={roleManager.filterAlerts(allAlerts, visibleTrucks)}
           />
         </aside>
         <main
