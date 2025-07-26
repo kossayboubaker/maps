@@ -73,14 +73,23 @@ const AlertNotifications = ({
         console.log('🔄 Mise à jour des alertes depuis APIs...');
         const realAlerts = await fetchRealAlerts();
 
-        // Filtrer les alertes valides et actives
-        const validAlerts = realAlerts.filter(alert =>
-          alert &&
-          alert.id &&
-          alert.type &&
-          alert.position &&
-          alert.isActive !== false
-        );
+        // Filtrer et valider les alertes avec vérification robuste
+        const validAlerts = realAlerts.filter(alert => {
+          try {
+            return alert &&
+              alert.id &&
+              alert.type &&
+              alert.position &&
+              Array.isArray(alert.position) &&
+              alert.position.length === 2 &&
+              typeof alert.position[0] === 'number' &&
+              typeof alert.position[1] === 'number' &&
+              alert.isActive !== false;
+          } catch (error) {
+            console.warn('⚠️ Alerte invalide détectée:', alert);
+            return false;
+          }
+        });
 
         // Marquer les nouvelles alertes pour l'animation
         const currentAlertIds = new Set(activeAlerts.map(a => a.id));
