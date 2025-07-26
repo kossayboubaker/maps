@@ -1033,6 +1033,29 @@ const MapCanvas = ({
             transform: scale(1.1);
             filter: brightness(1.1);
           }
+
+          /* Animations pour trajectoires de camions */
+          .animated-route {
+            animation: routeFlow 3s linear infinite;
+          }
+
+          @keyframes routeFlow {
+            0% {
+              stroke-dasharray: 0, 20;
+            }
+            100% {
+              stroke-dasharray: 20, 0;
+            }
+          }
+
+          /* Amélioration visuelle des lignes de route */
+          .leaflet-interactive {
+            transition: all 0.3s ease;
+          }
+
+          .leaflet-interactive:hover {
+            filter: brightness(1.2);
+          }
         `}
       </style>
     </div>
