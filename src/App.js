@@ -264,6 +264,27 @@ const App = () => {
   const [showWeather, setShowWeather] = useState(false);
   const [followTruck, setFollowTruck] = useState(false);
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
+  const [currentRole, setCurrentRole] = useState(roleManager.getCurrentRole());
+  const [visibleTrucks, setVisibleTrucks] = useState(mockTrucks);
+
+  // Gestion des changements de rôle
+  useEffect(() => {
+    const handleRoleChange = (event) => {
+      setCurrentRole(event.detail.role);
+      const filteredTrucks = roleManager.filterTrucks(mockTrucks);
+      setVisibleTrucks(filteredTrucks);
+      console.log(`🎭 Rôle changé: ${event.detail.role} - ${filteredTrucks.length} camions visibles`);
+    };
+
+    window.addEventListener('roleChanged', handleRoleChange);
+
+    // Initialiser avec le rôle par défaut
+    setVisibleTrucks(roleManager.filterTrucks(mockTrucks));
+
+    return () => {
+      window.removeEventListener('roleChanged', handleRoleChange);
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
