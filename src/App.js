@@ -423,6 +423,25 @@ const App = () => {
     <div className={`min-h-screen ${isAsideOpen ? 'bg-background' : 'bg-white'} overflow-hidden`}>
       <Header />
 
+      {/* Indicateur de rôle (coin supérieur droit) */}
+      <div style={{
+        position: 'fixed',
+        top: '10px',
+        right: '100px',
+        zIndex: 3000,
+        background: currentRole === 'conducteur' ? '#10b981' :
+                   currentRole === 'admin' ? '#3b82f6' : '#8b5cf6',
+        color: 'white',
+        padding: '4px 8px',
+        borderRadius: '12px',
+        fontSize: '10px',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+      }}>
+        🎭 {currentRole}
+      </div>
+
       {/* AdvancedMapControls selon votre image */}
       <AdvancedMapControls
         onZoomIn={handleZoomIn}
