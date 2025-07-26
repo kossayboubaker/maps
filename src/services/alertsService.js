@@ -33,7 +33,7 @@ class AlertsService {
       // 🌦️ Alertes Météo complètes selon description
       weatherRain: { title: 'Alerte pluie', icon: '🌧️', severity: 'warning', delay: [10, 20] },
       weatherThunderstorm: { title: 'Alerte orage', icon: '⛈️', severity: 'danger', delay: [25, 45] },
-      weatherMist: { title: 'Alerte brouillard', icon: '🌫️', severity: 'warning', delay: [15, 25] },
+      weatherMist: { title: 'Alerte brouillard', icon: '🌫��', severity: 'warning', delay: [15, 25] },
       weatherClear: { title: 'Conditions dégagées', icon: '☀️', severity: 'info', delay: [0, 5] },
       weatherClouds: { title: 'Conditions nuageuses', icon: '☁️', severity: 'info', delay: [0, 5] },
       weatherSnow: { title: 'Alerte neige', icon: '❄️', severity: 'danger', delay: [30, 60] },
@@ -507,10 +507,12 @@ class AlertsService {
       // Ajouter alertes réalistes tunisiennes
       const realisticAlerts = this.generateRealisticTunisianAlerts(truckRoutes);
       allAlerts.push(...realisticAlerts);
+      console.log(`🚗 Alertes trafic: ${trafficAlerts.length} intelligentes + ${realisticAlerts.length} réalistes`);
 
     } catch (error) {
-      console.warn('Système trafic indisponible, fallback activé');
-      allAlerts.push(...this.generateBasicFallbackAlerts(truckRoutes));
+      console.warn('⚠️ Système trafic indisponible, fallback activé');
+      const fallbackTraffic = this.generateBasicFallbackAlerts(truckRoutes);
+      allAlerts.push(...fallbackTraffic);
     }
     
     // S'assurer qu'on a toujours des alertes
