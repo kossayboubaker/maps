@@ -181,9 +181,9 @@ class RouteGenerator {
       lineStyle.dashArray = '12, 8';
     }
     
-    // Animation pour trajets actifs
+    // Style statique pour tous les trajets (plus d'animation)
     if (routeInfo.status === 'active' && isSelected) {
-      lineStyle.className = 'animated-route';
+      lineStyle.weight = baseWeight + 1;
     }
 
     return lineStyle;
