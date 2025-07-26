@@ -592,44 +592,63 @@ const MapCanvas = ({
       }
     });
 
-    // Ajouter TOUTES les alertes - statiques + générées (exclure les supprimées)
+    // Affichage intelligent des alertes avec gestion améliorée
     const alertsToShow = allAlerts.length > 0 ? allAlerts : alerts;
     if (alertsToShow && alertsToShow.length > 0) {
-      const filteredAlerts = alertsToShow.filter(alert => !deletedAlerts?.includes(alert.id));
+      const filteredAlerts = alertsToShow.filter(alert =>
+        alert &&
+        alert.position &&
+        Array.isArray(alert.position) &&
+        alert.position.length === 2 &&
+        !deletedAlerts?.includes(alert.id)
+      );
 
-      filteredAlerts.forEach(alert => {
-        if (!alert.position || alert.position.length < 2) return;
+      console.log(`🗺️ Affichage ${filteredAlerts.length} alertes sur carte`);
 
-        const alertMarker = L.marker(alert.position, {
-          icon: createAlertIcon(alert),
-        }).addTo(map);
+      filteredAlerts.forEach((alert, index) => {
+        try {
+          const alertMarker = L.marker(alert.position, {
+            icon: createAlertIcon(alert),
+            zIndexOffset: alert.realEvent ? 1000 : 500 // Priorité aux alertes temps réel
+          }).addTo(map);
 
-        // Tooltip détaillé au survol - PAS de popup au clic
-        alertMarker.on('mouseover', () => {
-          setHoveredItem({
-            type: 'alert',
-            data: {
-              ...alert,
-              showDetailed: true // Flag pour affichage détaillé
+          // Tooltip détaillé au survol avec informations étendues
+          alertMarker.on('mouseover', () => {
+            setHoveredItem({
+              type: 'alert',
+              data: {
+                ...alert,
+                showDetailed: true,
+                isRealTime: alert.realEvent || false,
+                alertIndex: index + 1
+              }
+            });
+          });
+
+          alertMarker.on('mouseout', () => {
+            setHoveredItem(null);
+          });
+
+          // Clic pour centrer et afficher détails
+          alertMarker.on('click', () => {
+            if (onAlertClick) {
+              onAlertClick(alert);
             }
-          });
-        });
 
-        alertMarker.on('mouseout', () => {
-          setHoveredItem(null);
-        });
+            // Animation de focus améliorée
+            const targetZoom = alert.realEvent ? 15 : 14;
+            map.flyTo(alert.position, Math.max(map.getZoom(), targetZoom), {
+              animate: true,
+              duration: 1.8,
+              easeLinearity: 0.25
+            });
 
-        // Clic pour centrer sur l'alerte avec animation
-        alertMarker.on('click', () => {
-          if (onAlertClick) {
-            onAlertClick(alert);
-          }
-          // Animation de focus sur l'alerte
-          map.flyTo(alert.position, Math.max(map.getZoom(), 14), {
-            animate: true,
-            duration: 1.5
+            console.log(`🎯 Focus alerte: ${alert.title} - ${alert.city || alert.location}`);
           });
-        });
+
+        } catch (error) {
+          console.warn(`⚠️ Erreur affichage alerte ${alert.id}:`, error);
+        }
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
