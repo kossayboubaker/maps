@@ -517,8 +517,8 @@ const App = () => {
           />
         </main>
 
-        {/* Bouton Chat Conducteurs */}
-        {currentRole !== 'conducteur' && (
+        {/* Bouton Chat Conducteurs - Seulement pour les conducteurs */}
+        {currentRole === 'conducteur' && (
           <button
             className="chat-toggle-btn"
             onClick={() => setChatOpen(true)}
