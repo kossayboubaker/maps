@@ -4,6 +4,7 @@ import DeliveryList from './components/DeliveryList/DeliveryList.js';
 import MapCanvas from './components/MapCanvas/MapCanvas.js';
 import AdvancedMapControls from './components/AdvancedMapControls/AdvancedMapControls.js';
 import AlertNotifications from './components/AlertNotifications/AlertNotifications.js';
+import DriverChat from './components/DriverChat/DriverChat.js';
 import roleManager from './services/roleManager';
 
 
@@ -266,6 +267,8 @@ const App = () => {
   const [isAlertsOpen, setIsAlertsOpen] = useState(false);
   const [currentRole, setCurrentRole] = useState(roleManager.getCurrentRole());
   const [visibleTrucks, setVisibleTrucks] = useState(mockTrucks);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState({ id: 'current_user', name: 'Gestionnaire' });
 
   // Gestion des changements de rôle
   useEffect(() => {
@@ -503,6 +506,51 @@ const App = () => {
             onAlertClick={handleAlertClick}
           />
         </main>
+
+        {/* Bouton Chat Conducteurs */}
+        {currentRole !== 'conducteur' && (
+          <button
+            className="chat-toggle-btn"
+            onClick={() => setChatOpen(true)}
+            style={{
+              position: 'fixed',
+              bottom: '20px',
+              right: '20px',
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              border: 'none',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              fontSize: '24px',
+              cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(16, 185, 129, 0.4)',
+              zIndex: 1500,
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.1)';
+              e.target.style.boxShadow = '0 12px 35px rgba(16, 185, 129, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+              e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.4)';
+            }}
+          >
+            💬
+          </button>
+        )}
+
+        {/* Module de Discussion */}
+        <DriverChat
+          isOpen={chatOpen}
+          onClose={() => setChatOpen(false)}
+          currentUser={currentUser}
+          trucks={visibleTrucks}
+        />
         <button
           onClick={() => setIsAsideOpen(!isAsideOpen)}
           style={{
@@ -559,6 +607,37 @@ const App = () => {
             to {
               transform: translateX(0);
               opacity: 1;
+            }
+          }
+
+          /* Responsive styles for chat button */
+          @media (max-width: 768px) {
+            .chat-toggle-btn {
+              bottom: 15px !important;
+              right: 15px !important;
+              width: 56px !important;
+              height: 56px !important;
+              font-size: 20px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .chat-toggle-btn {
+              bottom: 12px !important;
+              right: 12px !important;
+              width: 52px !important;
+              height: 52px !important;
+              font-size: 18px !important;
+            }
+          }
+
+          @media (max-width: 320px) {
+            .chat-toggle-btn {
+              bottom: 10px !important;
+              right: 10px !important;
+              width: 48px !important;
+              height: 48px !important;
+              font-size: 16px !important;
             }
           }
         `}
