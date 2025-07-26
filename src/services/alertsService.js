@@ -480,10 +480,11 @@ class AlertsService {
     }
   }
 
-  // Méthode principale avec gestion d'erreur complète
+  // Méthode principale avec gestion d'erreur complète et protection CORS
   async getAllAlerts(truckRoutes = []) {
     const allAlerts = [];
-    
+    console.log('🚀 Démarrage système d\'alertes CORS-safe');
+
     // Récupérer alertes météo avec protection
     try {
       const weatherAlerts = await Promise.race([
@@ -491,9 +492,11 @@ class AlertsService {
         new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout météo')), 8000))
       ]);
       allAlerts.push(...weatherAlerts);
+      console.log(`🌤️ Alertes météo: ${weatherAlerts.length} récupérées`);
     } catch (error) {
-      console.warn('Météo indisponible, fallback activé');
-      allAlerts.push(...this.getFallbackWeatherAlerts(truckRoutes));
+      console.warn('⚠️ Météo indisponible, fallback activé');
+      const fallbackWeather = this.getFallbackWeatherAlerts(truckRoutes);
+      allAlerts.push(...fallbackWeather);
     }
     
     // Récupérer alertes trafic avec protection (méthode CORS-safe)
