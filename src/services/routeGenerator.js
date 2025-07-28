@@ -1,87 +1,98 @@
-// Générateur de routes avec trajectoires réalistes pour éviter les problèmes d'API
+// Générateur de routes avec trajectoires réalistes suivant les vraies routes tunisiennes
 class RouteGenerator {
   constructor() {
-    // Routes prédéfinies pour la Tunisie (trajectoires réalistes)
+    // Routes prédéfinies pour la Tunisie (trajectoires réalistes suivant les routes terrestres)
     this.predefinedRoutes = {
       'TN-001': {
-        // Tunis vers Sfax (Autoroute A1)
+        // Tunis vers Sfax (Autoroute A1 - Route terrestre réelle)
         startPoint: [36.8065, 10.1815],
         endPoint: [34.7406, 10.7603],
         color: '#1e90ff', // Bleu pour trajets actifs
         status: 'active',
         waypoints: [
           [36.8065, 10.1815], // Tunis départ
-          [36.7200, 10.1600], // Sortie Tunis
-          [36.6000, 10.1400], // Direction Enfidha
-          [36.4000, 10.2000], // Enfidha
-          [36.1500, 10.2500], // Kairouan région
-          [35.8000, 10.3500], // Intersection A1
-          [35.5000, 10.4500], // Approche Sfax
-          [35.2000, 10.5500], // Périphérie Sfax
-          [34.7406, 10.7603]  // Sfax centre
+          [36.7500, 10.1200], // Sortie Tunis vers A1
+          [36.6500, 10.0800], // Manouba
+          [36.5500, 10.0500], // Mohammedia
+          [36.4000, 10.0200], // Enfidha (A1)
+          [36.2000, 9.9800],  // Sud d'Enfidha
+          [35.9000, 9.9500],  // Vers Kairouan
+          [35.6000, 10.0000], // Kairouan région
+          [35.3000, 10.2000], // Approche Sfax par l'ouest
+          [35.0000, 10.4000], // Périphérie ouest Sfax
+          [34.7406, 10.7603]  // Sfax centre (côte)
         ]
       },
       'TN-002': {
-        // Tunis vers Sousse (Route côtière)
+        // Tunis vers Sousse (Route terrestre A1 puis côtière)
         startPoint: [36.8065, 10.1815],
         endPoint: [35.8256, 10.6369],
         color: '#22c55e', // Vert pour trajets terminés
         status: 'completed',
         waypoints: [
           [36.8065, 10.1815], // Tunis
-          [36.7000, 10.2500], // La Goulette
-          [36.6000, 10.3500], // Côte nord
-          [36.4500, 10.4500], // Hammamet
-          [36.2000, 10.5000], // Nabeul
-          [36.0000, 10.5500], // Approche Sousse
+          [36.7500, 10.1200], // Sortie Tunis
+          [36.6500, 10.0800], // Manouba
+          [36.5000, 10.0500], // Vers Mohammedia
+          [36.3500, 10.1000], // Bou Argoub
+          [36.2000, 10.2000], // Vers Grombalia
+          [36.1000, 10.3500], // Grombalia
+          [36.0000, 10.4500], // Nabeul région
+          [35.9000, 10.5500], // Hammamet
           [35.8256, 10.6369]  // Sousse
         ]
       },
       'TN-003': {
-        // Ariana vers Kairouan (Route intérieure)
+        // Ariana vers Kairouan (Route intérieure P5 puis P12)
         startPoint: [36.4098, 10.1398],
         endPoint: [35.6786, 10.0963],
         color: '#1e90ff',
         status: 'active',
         waypoints: [
           [36.4098, 10.1398], // Ariana
-          [36.3500, 10.1200], // Sortie Ariana
-          [36.2000, 10.0800], // Route intérieure
-          [36.0000, 10.0500], // Zaghouan
-          [35.8500, 10.0700], // Approche Kairouan
-          [35.6786, 10.0963]  // Kairouan
+          [36.3500, 10.1000], // Sud Ariana
+          [36.2500, 10.0500], // Mornaguia
+          [36.1500, 10.0000], // Vers Zaghouan
+          [36.0500, 9.9500],  // Zaghouan région
+          [35.9500, 9.9800],  // Sud Zaghouan
+          [35.8500, 10.0300], // Vers Kairouan
+          [35.7500, 10.0600], // Approche Kairouan
+          [35.6786, 10.0963]  // Kairouan centre
         ]
       },
       'TN-004': {
-        // La Goulette vers Nabeul (Route côtière)
+        // La Goulette vers Nabeul (Route côtière puis P1)
         startPoint: [36.7538, 10.2286],
         endPoint: [36.4561, 10.7376],
         color: '#1e90ff',
         status: 'active',
         waypoints: [
           [36.7538, 10.2286], // La Goulette
-          [36.7000, 10.3000], // Côte
-          [36.6500, 10.4000], // Sidi Bou Saïd
-          [36.6000, 10.5000], // La Marsa
-          [36.5500, 10.6000], // Gammarth
-          [36.5000, 10.6500], // Approche Nabeul
+          [36.7200, 10.2500], // Vers Carthage
+          [36.6800, 10.3000], // Sidi Bou Saïd
+          [36.6500, 10.3500], // La Marsa
+          [36.6000, 10.4000], // Gammarth
+          [36.5500, 10.4500], // Côte vers Soliman
+          [36.5000, 10.5500], // Soliman
+          [36.4800, 10.6500], // Approche Nabeul
           [36.4561, 10.7376]  // Nabeul
         ]
       },
       'TN-005': {
-        // Sfax vers Gabès (Route du sud)
+        // Sfax vers Gabès (Route GP1 terrestre)
         startPoint: [34.7406, 10.7603],
         endPoint: [33.8869, 10.0982],
         color: '#f59e0b', // Orange pour maintenance
         status: 'maintenance',
         waypoints: [
           [34.7406, 10.7603], // Sfax
-          [34.6000, 10.6000], // Sortie Sfax
-          [34.4000, 10.4500], // Route GP1
-          [34.2000, 10.3000], // Mahdia région
-          [34.0000, 10.2000], // Sud tunisien
-          [33.9000, 10.1500], // Approche Gabès
-          [33.8869, 10.0982]  // Gabès
+          [34.6500, 10.6500], // Sortie sud Sfax
+          [34.5000, 10.5000], // Route vers l'intérieur
+          [34.3500, 10.3500], // Mahrès région
+          [34.2000, 10.2000], // Vers El Hencha
+          [34.0500, 10.1500], // El Hencha
+          [33.9500, 10.1200], // Approche Gabès
+          [33.8869, 10.0982]  // Gabès centre
         ]
       }
     };
@@ -160,14 +171,14 @@ class RouteGenerator {
     return routes;
   }
 
-  // Créer ligne de route avec style selon état
+  // Créer ligne de route avec style selon état (SANS ANIMATIONS)
   createRoutePolyline(routeInfo, isSelected = false) {
     if (!routeInfo || !routeInfo.fullRoute) return null;
 
     const baseWeight = isSelected ? 6 : 4;
     const opacity = routeInfo.status === 'completed' ? 0.7 : 0.9;
     
-    // Style selon état
+    // Style selon état (STATIQUE - SANS ANIMATIONS)
     const lineStyle = {
       color: routeInfo.color,
       weight: baseWeight,
@@ -181,7 +192,7 @@ class RouteGenerator {
       lineStyle.dashArray = '12, 8';
     }
     
-    // Style statique pour tous les trajets (plus d'animation)
+    // Style statique pour tous les trajets (PLUS D'ANIMATION)
     if (routeInfo.status === 'active' && isSelected) {
       lineStyle.weight = baseWeight + 1;
     }
