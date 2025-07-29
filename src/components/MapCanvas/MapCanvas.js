@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import routeGenerator from '../../services/routeGenerator';
+import routeService from '../../services/routeService';
 import roleManager from '../../services/roleManager';
 
 const WEATHER_API_KEY = '4437791bbdc183036e4e04dc15c92cb8';
@@ -220,7 +221,7 @@ const MapCanvas = ({
         // Priorité au générateur de routes intégré pour éviter les appels API excessifs
         const routeInfo = routeGenerator.generateRouteWithProgress(truck.truck_id, 0);
         if (routeInfo && routeInfo.fullRoute) {
-          console.log(`🎯 Route pré-générée utilisée pour ${truck.truck_id}`);
+          console.log(`🎯 Route pr��-générée utilisée pour ${truck.truck_id}`);
           return { truckId: truck.truck_id, route: routeInfo.fullRoute };
         }
 
@@ -503,41 +504,50 @@ const MapCanvas = ({
       onMapReady(leafletMap);
     }
 
-    // Générer les routes avec le système amélioré et cache
+    // Générer les routes avec le nouveau service terrestre
     setTimeout(async () => {
       try {
-        const routes = await generateRealRoutes();
+        // Utiliser le nouveau service de routes terrestres
+        const extractedRoutes = routeService.extractRoutesFromTruckData(trucksData);
+
         setTrucksData(prev => prev.map(truck => {
-          // Priorité: routes générées > routes par défaut
-          const routeToUse = routes[truck.truck_id] || routeGenerator.generateRouteWithProgress(truck.truck_id, 0)?.fullRoute;
+          const routeData = extractedRoutes[truck.truck_id];
 
-          const fallbackRoute = [
-            truck.position,
-            truck.destinationCoords || truck.destination?.coordinates || truck.position
-          ];
+          if (routeData) {
+            // Utiliser la route extraite et améliorée
+            return {
+              ...truck,
+              realRoute: routeData.waypoints,
+              improvedRoute: routeData,
+              position: routeData.currentPosition
+            };
+          }
 
+          // Fallback vers générateur existant
+          const routeInfo = routeGenerator.generateRouteWithProgress(truck.truck_id, 0);
           return {
             ...truck,
-            realRoute: routeToUse || fallbackRoute
+            realRoute: routeInfo?.fullRoute || [truck.position],
+            improvedRoute: null
           };
         }));
-        console.log('✅ Toutes les routes initialisées avec succès');
+
+        console.log('✅ Routes terrestres initialisées depuis les données camions');
       } catch (error) {
-        console.warn('🔄 Erreur routes, utilisation générateur intégré');
-        // Utiliser le générateur de routes intégré en cas d'échec complet
+        console.warn('🔄 Erreur extraction routes, utilisation générateur de base');
+        // Fallback final
         setTrucksData(prev => prev.map(truck => {
-          const routeInfo = routeGenerator.generateRouteWithProgress(truck.truck_id, 0);
           const fallbackRoute = [
-            truck.position,
-            truck.destinationCoords || truck.destination?.coordinates || truck.position
+            routeService.validateLandPoint ? routeService.validateLandPoint(truck.position) : truck.position,
+            routeService.validateLandPoint ? routeService.validateLandPoint(truck.destinationCoords || truck.position) : (truck.destinationCoords || truck.position)
           ];
           return {
             ...truck,
-            realRoute: routeInfo?.fullRoute || fallbackRoute
+            realRoute: fallbackRoute
           };
         }));
       }
-    }, 100); // Réduction du délai
+    }, 100);
 
     return () => {
       leafletMap.remove();
@@ -569,20 +579,50 @@ const MapCanvas = ({
 
     // Ajouter les camions avec positions mises à jour
     visibleTrucks.forEach((truck) => {
-      // Mettre à jour position selon route réaliste
-      const currentPosition = routeGenerator.getCurrentTruckPosition(
-        truck.truck_id,
-        truck.route_progress || 0
-      );
+      // Mettre à jour position selon route réaliste (terrestre)
+      let currentPosition;
 
-      const truckPosition = currentPosition || truck.position;
+      if (truck.improvedRoute) {
+        // Utiliser le nouveau service de routes
+        currentPosition = routeService.getCurrentPositionOnRoute({
+          waypoints: truck.improvedRoute.waypoints,
+          progress: truck.route_progress || 0
+        });
+      } else {
+        // Fallback vers générateur existant
+        currentPosition = routeGenerator.getCurrentTruckPosition(
+          truck.truck_id,
+          truck.route_progress || 0
+        );
+      }
+
+      // Valider que la position est sur terre
+      const truckPosition = routeService.validateLandPoint ?
+        routeService.validateLandPoint(currentPosition || truck.position) :
+        (currentPosition || truck.position);
       if (!truckPosition || truckPosition.length < 2) return;
 
       // Calculer orientation du camion
-      const bearing = routeGenerator.calculateBearing(
-        truck.truck_id,
-        truck.route_progress || 0
-      );
+      let bearing = 0;
+
+      if (truck.improvedRoute && truck.improvedRoute.waypoints.length > 1) {
+        // Utiliser le nouveau service pour calculer l'orientation
+        const progress = truck.route_progress || 0;
+        const waypoints = truck.improvedRoute.waypoints;
+        const totalSegments = waypoints.length - 1;
+        const segmentIndex = Math.floor((progress / 100) * totalSegments);
+        const nextIndex = Math.min(segmentIndex + 1, totalSegments);
+
+        if (segmentIndex !== nextIndex) {
+          bearing = routeService.calculateBearing(waypoints[segmentIndex], waypoints[nextIndex]);
+        }
+      } else {
+        // Fallback vers générateur existant
+        bearing = routeGenerator.calculateBearing(
+          truck.truck_id,
+          truck.route_progress || 0
+        );
+      }
 
       const marker = L.marker(truckPosition, {
         icon: createTruckIcon({...truck, bearing: bearing}),
@@ -616,18 +656,31 @@ const MapCanvas = ({
         console.log(`🚛 Camion sélectionné: ${truck.truck_id} - Suivi activé: ${followTruck}`);
       });
 
-      // ROUTES AMÉLIORÉES avec générateur de trajectoires réalistes
+      // ROUTES TERRESTRES AMÉLIORÉES avec nouveau service
       if (showRoutes) {
-        const routeInfo = routeGenerator.generateRouteWithProgress(
-          truck.truck_id,
-          truck.route_progress || 0
-        );
+        let routeToDisplay;
 
-        if (routeInfo && routeInfo.fullRoute && routeInfo.fullRoute.length > 1) {
+        if (truck.improvedRoute) {
+          // Utiliser la route améliorée terrestre
+          routeToDisplay = {
+            fullRoute: truck.improvedRoute.waypoints,
+            color: truck.improvedRoute.color,
+            state: truck.improvedRoute.state
+          };
+        } else {
+          // Fallback vers générateur existant
+          const routeInfo = routeGenerator.generateRouteWithProgress(
+            truck.truck_id,
+            truck.route_progress || 0
+          );
+          routeToDisplay = routeInfo;
+        }
+
+        if (routeToDisplay && routeToDisplay.fullRoute && routeToDisplay.fullRoute.length > 1) {
           const isSelected = selectedDelivery && selectedDelivery.truck_id === truck.truck_id;
 
           // Couleur selon état (BLEU pour actif, VERT pour terminé)
-          let routeColor = routeInfo.color;
+          let routeColor = routeToDisplay.color || '#6b7280';
           if (truck.state === 'En Route') {
             routeColor = '#1e90ff'; // Bleu pour trajets actifs
           } else if (truck.state === 'At Destination') {
@@ -636,7 +689,7 @@ const MapCanvas = ({
             routeColor = '#f59e0b'; // Orange pour maintenance
           }
 
-          // Style de ligne selon état
+          // Style de ligne selon état (SANS ANIMATION)
           const lineStyle = {
             color: routeColor,
             weight: isSelected ? 6 : 4,
@@ -650,31 +703,35 @@ const MapCanvas = ({
             lineStyle.dashArray = '12, 8';
           }
 
-          // Créer la polyline
-          const routeLine = L.polyline(routeInfo.fullRoute, lineStyle).addTo(map);
-
-          // Pas d'animation pour les trajectoires (performance améliorée)
+          // Créer la polyline TERRESTRE
+          const routeLine = L.polyline(routeToDisplay.fullRoute, lineStyle).addTo(map);
 
           // Points d'étapes pour le camion sélectionné
           if (isSelected) {
-            const markers = routeGenerator.createRouteMarkers({
-              ...routeInfo,
-              truck: truck
-            });
+            const startPoint = routeToDisplay.fullRoute[0];
+            const endPoint = routeToDisplay.fullRoute[routeToDisplay.fullRoute.length - 1];
 
-            markers.forEach(markerInfo => {
-              L.circleMarker(markerInfo.position, {
-                radius: markerInfo.type === 'waypoint' ? 6 : 8,
-                color: markerInfo.type === 'start' ? '#10B981' :
-                       markerInfo.type === 'end' ? '#EF4444' : '#3B82F6',
-                fillColor: markerInfo.type === 'start' ? '#10B981' :
-                           markerInfo.type === 'end' ? '#EF4444' : '#3B82F6',
-                fillOpacity: 0.8,
-                weight: 3,
-                stroke: true,
-                strokeColor: '#fff',
-              }).addTo(map).bindPopup(markerInfo.popup);
-            });
+            // Marqueur de départ
+            L.circleMarker(startPoint, {
+              radius: 8,
+              color: '#10B981',
+              fillColor: '#10B981',
+              fillOpacity: 0.8,
+              weight: 3,
+              stroke: true,
+              strokeColor: '#fff',
+            }).addTo(map).bindPopup(`<div style="text-align: center; font-family: sans-serif;"><strong>🟢 Départ</strong><br><span style="font-size: 12px;">${truck.pickup?.address || 'Point de départ'}</span></div>`);
+
+            // Marqueur d'arrivée
+            L.circleMarker(endPoint, {
+              radius: 8,
+              color: '#EF4444',
+              fillColor: '#EF4444',
+              fillOpacity: 0.8,
+              weight: 3,
+              stroke: true,
+              strokeColor: '#fff',
+            }).addTo(map).bindPopup(`<div style="text-align: center; font-family: sans-serif;"><strong>🔴 Destination</strong><br><span style="font-size: 12px;">${truck.destination || 'Point d\'arrivée'}</span></div>`);
           }
         }
       }
