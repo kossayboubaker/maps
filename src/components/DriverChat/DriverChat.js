@@ -9,12 +9,11 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
   const [onlineDrivers, setOnlineDrivers] = useState([]);
   const messagesEndRef = useRef(null);
 
-  // Simuler les conducteurs en ligne (exclure l'utilisateur actuel)
+  // Simuler tous les conducteurs disponibles (exclure l'utilisateur actuel)
   useEffect(() => {
-    const activeDrivers = trucks
+    const allDrivers = trucks
       .filter(truck =>
-        (truck.state === 'En Route' || truck.state === 'At Destination') &&
-        truck.driver.id !== currentUser.id // Exclure l'utilisateur actuel
+        truck.driver.id !== currentUser.id // Exclure seulement l'utilisateur actuel
       )
       .map(truck => ({
         id: truck.driver.id,
@@ -22,10 +21,12 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
         truckId: truck.truck_id,
         status: truck.state,
         lastSeen: new Date(),
-        avatar: truck.driver.avatar || '👤'
+        avatar: truck.driver.avatar || '👤',
+        isOnline: true // Tous les conducteurs sont considérés comme disponibles
       }));
 
-    setOnlineDrivers(activeDrivers);
+    setOnlineDrivers(allDrivers);
+    console.log(`💬 ${allDrivers.length} conducteurs disponibles pour discussion`);
   }, [trucks, currentUser.id]);
 
   // Messages prédéfinis pour la démonstration
@@ -113,13 +114,13 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
 
   const getDriverStatus = (driver) => {
     const truck = trucks.find(t => t.driver.id === driver.id);
-    if (!truck) return 'Hors ligne';
-    
+    if (!truck) return '📱 Disponible';
+
     switch (truck.state) {
-      case 'En Route': return '🚛 En route';
+      case 'En Route': return '���� En route';
       case 'At Destination': return '📍 Arrivé';
       case 'Maintenance': return '🔧 Maintenance';
-      default: return '⏸️ En pause';
+      default: return '📱 Disponible';
     }
   };
 
@@ -149,9 +150,9 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
             <div className="drivers-content">
               {onlineDrivers.length === 0 ? (
                 <div className="no-drivers">
-                  <div className="no-drivers-icon">😴</div>
-                  <p>Aucun autre conducteur disponible</p>
-                  <small style={{color: '#9ca3af', fontSize: '12px', marginTop: '8px', display: 'block'}}>Les autres conducteurs apparaîtront ici quand ils seront en ligne</small>
+                  <div className="no-drivers-icon">👥</div>
+                  <p>Aucun autre conducteur</p>
+                  <small style={{color: '#9ca3af', fontSize: '12px', marginTop: '8px', display: 'block'}}>Tous les conducteurs de la flotte peuvent communiquer ici</small>
                 </div>
               ) : (
                 onlineDrivers.map(driver => (
@@ -233,7 +234,7 @@ const DriverChat = ({ isOpen, onClose, currentUser, trucks = [] }) => {
                     </button>
                   </div>
                   <div className="quick-messages">
-                    {['👍 OK', '⚠️ Attention', '🚧 Problème route', '⏰ Retard'].map(quick => (
+                    {['��� OK', '⚠️ Attention', '🚧 Problème route', '⏰ Retard'].map(quick => (
                       <button
                         key={quick}
                         onClick={() => setNewMessage(quick)}
