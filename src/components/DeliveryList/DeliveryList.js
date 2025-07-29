@@ -3,7 +3,17 @@ import DeliveryCard from '../DeliveryCard/DeliveryCard';
 
 const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery, onSelectDelivery, alerts = [] }) => {
   const [currentPage, setCurrentPage] = useState(0);
+  const [screenSize, setScreenSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const itemsPerPage = 2; // Exactement 2 éléments par page
+
+  // Surveiller les changements de taille d'écran
+  useEffect(() => {
+    const handleResize = () => {
+      setScreenSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Recherche intelligente améliorée
   const filteredDeliveries = useMemo(() => {
@@ -73,23 +83,128 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
     return { total, enRoute, arrived, totalAlerts, avgSpeed };
   }, [deliveries, alerts]);
 
+  // Configuration responsive adaptative
+  const getResponsiveConfig = () => {
+    const { width, height } = screenSize;
+    
+    if (width >= 3840) { // 4K+
+      return {
+        padding: '20px 24px',
+        searchPadding: '16px 24px 12px 24px',
+        cardGap: '16px',
+        fontSize: '16px',
+        headerHeight: 90,
+        statsHeight: 50,
+        searchHeight: 48,
+        cardsHeight: height - 250 // Hauteur restante pour les cartes
+      };
+    } else if (width >= 2560) { // 2K
+      return {
+        padding: '16px 20px',
+        searchPadding: '14px 20px 10px 20px',
+        cardGap: '14px',
+        fontSize: '15px',
+        headerHeight: 80,
+        statsHeight: 45,
+        searchHeight: 44,
+        cardsHeight: height - 220
+      };
+    } else if (width >= 1920) { // Full HD
+      return {
+        padding: '14px 18px',
+        searchPadding: '12px 18px 8px 18px',
+        cardGap: '12px',
+        fontSize: '14px',
+        headerHeight: 75,
+        statsHeight: 42,
+        searchHeight: 42,
+        cardsHeight: height - 200
+      };
+    } else if (width >= 1440) { // Desktop
+      return {
+        padding: '12px 16px',
+        searchPadding: '12px 16px 8px 16px',
+        cardGap: '12px',
+        fontSize: '14px',
+        headerHeight: 70,
+        statsHeight: 40,
+        searchHeight: 40,
+        cardsHeight: height - 180
+      };
+    } else if (width >= 1024) { // Laptop
+      return {
+        padding: '10px 14px',
+        searchPadding: '10px 14px 6px 14px',
+        cardGap: '10px',
+        fontSize: '13px',
+        headerHeight: 65,
+        statsHeight: 38,
+        searchHeight: 38,
+        cardsHeight: height - 160
+      };
+    } else if (width >= 768) { // Tablet
+      return {
+        padding: '8px 12px',
+        searchPadding: '8px 12px 6px 12px',
+        cardGap: '8px',
+        fontSize: '13px',
+        headerHeight: 60,
+        statsHeight: 36,
+        searchHeight: 36,
+        cardsHeight: height - 140
+      };
+    } else if (width >= 480) { // Mobile Large
+      return {
+        padding: '6px 10px',
+        searchPadding: '6px 10px 4px 10px',
+        cardGap: '6px',
+        fontSize: '12px',
+        headerHeight: 55,
+        statsHeight: 34,
+        searchHeight: 34,
+        cardsHeight: height - 120
+      };
+    } else { // Mobile Small
+      return {
+        padding: '4px 8px',
+        searchPadding: '4px 8px 4px 8px',
+        cardGap: '4px',
+        fontSize: '11px',
+        headerHeight: 50,
+        statsHeight: 32,
+        searchHeight: 32,
+        cardsHeight: height - 110
+      };
+    }
+  };
+
+  const config = getResponsiveConfig();
+
   return (
     <div style={{ 
       display: 'flex', 
       flexDirection: 'column', 
       height: '100%', 
+      width: '100%',
       overflow: 'hidden',
       margin: 0,
-      padding: 0
+      padding: 0,
+      backgroundColor: '#fff',
+      boxSizing: 'border-box'
     }}>
-      {/* Barre de recherche - sans espacement */}
+      {/* Barre de recherche responsive */}
       <div style={{ 
-        padding: '12px 16px 8px 16px', 
+        padding: config.searchPadding,
         borderBottom: '1px solid #e2e8f0',
         flexShrink: 0,
-        margin: 0
+        margin: 0,
+        height: config.headerHeight + 'px',
+        boxSizing: 'border-box',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}>
-        <div style={{ position: 'relative', marginBottom: '12px' }}>
+        <div style={{ position: 'relative', marginBottom: '8px', flex: 1 }}>
           <svg
             style={{
               position: 'absolute',
@@ -97,8 +212,8 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
               top: '50%',
               transform: 'translateY(-50%)',
               color: '#6b7280',
-              width: '16px',
-              height: '16px'
+              width: Math.max(14, config.searchHeight * 0.4) + 'px',
+              height: Math.max(14, config.searchHeight * 0.4) + 'px'
             }}
             fill="none"
             stroke="currentColor"
@@ -118,15 +233,16 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             onChange={(e) => onSearchChange(e.target.value)}
             style={{
               width: '100%',
-              height: '40px',
-              paddingLeft: '40px',
+              height: config.searchHeight + 'px',
+              paddingLeft: Math.max(32, config.searchHeight * 0.8) + 'px',
               paddingRight: '12px',
-              borderRadius: '8px',
+              borderRadius: Math.max(6, config.searchHeight * 0.2) + 'px',
               border: '1px solid #e2e8f0',
               backgroundColor: '#fff',
-              fontSize: '14px',
+              fontSize: config.fontSize,
               outline: 'none',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              boxSizing: 'border-box'
             }}
             onFocus={(e) => {
               e.target.style.borderColor = '#3b82f6';
@@ -139,102 +255,146 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
           />
         </div>
 
-        {/* Statistiques compactes */}
+        {/* Statistiques responsives */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: '4px',
-          margin: 0
+          gridTemplateColumns: screenSize.width >= 768 ? 'repeat(5, 1fr)' : 'repeat(3, 1fr)',
+          gap: Math.max(2, screenSize.width * 0.002) + 'px',
+          margin: 0,
+          height: config.statsHeight + 'px',
+          alignItems: 'center'
         }}>
           <div style={{
             background: '#10b981',
-            borderRadius: '6px',
-            padding: '6px 4px',
+            borderRadius: Math.max(4, config.statsHeight * 0.15) + 'px',
+            padding: `${Math.max(3, config.statsHeight * 0.15)}px ${Math.max(2, config.statsHeight * 0.1)}px`,
             textAlign: 'center',
-            color: 'white'
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: '100%',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
-            <div style={{ fontSize: '8px', marginTop: '1px' }}>Camions</div>
+            <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 1.1) + 'px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
+            <div style={{ fontSize: Math.max(7, parseInt(config.fontSize) * 0.7) + 'px', marginTop: '1px' }}>Camions</div>
           </div>
           <div style={{
             background: '#3b82f6',
-            borderRadius: '6px',
-            padding: '6px 4px',
+            borderRadius: Math.max(4, config.statsHeight * 0.15) + 'px',
+            padding: `${Math.max(3, config.statsHeight * 0.15)}px ${Math.max(2, config.statsHeight * 0.1)}px`,
             textAlign: 'center',
-            color: 'white'
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: '100%',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
-            <div style={{ fontSize: '8px', marginTop: '1px' }}>En route</div>
+            <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 1.1) + 'px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
+            <div style={{ fontSize: Math.max(7, parseInt(config.fontSize) * 0.7) + 'px', marginTop: '1px' }}>En route</div>
           </div>
           <div style={{
             background: '#8b5cf6',
-            borderRadius: '6px',
-            padding: '6px 4px',
+            borderRadius: Math.max(4, config.statsHeight * 0.15) + 'px',
+            padding: `${Math.max(3, config.statsHeight * 0.15)}px ${Math.max(2, config.statsHeight * 0.1)}px`,
             textAlign: 'center',
-            color: 'white'
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            height: '100%',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.arrived}</div>
-            <div style={{ fontSize: '8px', marginTop: '1px' }}>Arrivés</div>
+            <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 1.1) + 'px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.arrived}</div>
+            <div style={{ fontSize: Math.max(7, parseInt(config.fontSize) * 0.7) + 'px', marginTop: '1px' }}>Arrivés</div>
           </div>
-          <div style={{
-            background: '#ef4444',
-            borderRadius: '6px',
-            padding: '6px 4px',
-            textAlign: 'center',
-            color: 'white'
-          }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
-            <div style={{ fontSize: '8px', marginTop: '1px' }}>Alertes</div>
-          </div>
-          <div style={{
-            background: '#f59e0b',
-            borderRadius: '6px',
-            padding: '6px 4px',
-            textAlign: 'center',
-            color: 'white'
-          }}>
-            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
-            <div style={{ fontSize: '8px', marginTop: '1px' }}>km/h</div>
-          </div>
+          {screenSize.width >= 768 && (
+            <div style={{
+              background: '#ef4444',
+              borderRadius: Math.max(4, config.statsHeight * 0.15) + 'px',
+              padding: `${Math.max(3, config.statsHeight * 0.15)}px ${Math.max(2, config.statsHeight * 0.1)}px`,
+              textAlign: 'center',
+              color: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              height: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 1.1) + 'px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
+              <div style={{ fontSize: Math.max(7, parseInt(config.fontSize) * 0.7) + 'px', marginTop: '1px' }}>Alertes</div>
+            </div>
+          )}
+          {screenSize.width >= 768 && (
+            <div style={{
+              background: '#f59e0b',
+              borderRadius: Math.max(4, config.statsHeight * 0.15) + 'px',
+              padding: `${Math.max(3, config.statsHeight * 0.15)}px ${Math.max(2, config.statsHeight * 0.1)}px`,
+              textAlign: 'center',
+              color: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              height: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 1.1) + 'px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
+              <div style={{ fontSize: Math.max(7, parseInt(config.fontSize) * 0.7) + 'px', marginTop: '1px' }}>km/h</div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* En-tête livraisons */}
+      {/* En-tête livraisons responsive */}
       <div style={{ 
-        padding: '8px 16px', 
+        padding: config.padding.split(' ').slice(0, 2).join(' ') + ' ' + config.padding.split(' ').slice(0, 2).join(' '), 
         borderBottom: '1px solid #e2e8f0', 
         flexShrink: 0,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        margin: 0
+        margin: 0,
+        height: Math.max(32, screenSize.width * 0.02) + 'px',
+        boxSizing: 'border-box'
       }}>
-        <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>Livraisons</div>
+        <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px', color: '#6b7280', fontWeight: '500' }}>Livraisons</div>
         {filteredDeliveries?.length > 0 && (
-          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+          <div style={{ fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px', color: '#6b7280' }}>
             {startIndex + 1}-{Math.min(endIndex, filteredDeliveries?.length)}/{filteredDeliveries.length}
           </div>
         )}
       </div>
 
-      {/* Zone d'affichage des cartes - EXACTEMENT 2 cartes */}
+      {/* Zone d'affichage des cartes responsive - EXACTEMENT 2 cartes */}
       <div style={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column',
         overflow: 'hidden',
-        padding: '12px 16px 0px 16px',
-        gap: '12px',
-        margin: 0
+        padding: config.padding,
+        gap: config.cardGap,
+        margin: 0,
+        height: config.cardsHeight + 'px',
+        maxHeight: config.cardsHeight + 'px',
+        boxSizing: 'border-box'
       }}>
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
-            <DeliveryCard
-              key={delivery.id}
-              delivery={delivery}
-              isSelected={selectedDelivery?.truck_id === delivery.truck_id}
-              onSelect={() => onSelectDelivery && onSelectDelivery(delivery)}
-            />
+            <div key={delivery.id} style={{ 
+              flex: 1, 
+              maxHeight: `calc((${config.cardsHeight}px - ${config.cardGap}) / 2)`,
+              minHeight: `calc((${config.cardsHeight}px - ${config.cardGap}) / 2)`,
+              overflow: 'hidden'
+            }}>
+              <DeliveryCard
+                delivery={delivery}
+                isSelected={selectedDelivery?.truck_id === delivery.truck_id}
+                onSelect={() => onSelectDelivery && onSelectDelivery(delivery)}
+                screenSize={screenSize}
+                config={config}
+              />
+            </div>
           ))
         ) : (
           <div style={{
@@ -242,21 +402,21 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            height: '200px',
+            height: config.cardsHeight + 'px',
             textAlign: 'center'
           }}>
             <div style={{
-              width: '48px',
-              height: '48px',
+              width: Math.max(32, screenSize.width * 0.03) + 'px',
+              height: Math.max(32, screenSize.width * 0.03) + 'px',
               backgroundColor: '#f3f4f6',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '12px'
+              marginBottom: Math.max(8, screenSize.width * 0.008) + 'px'
             }}>
               <svg
-                style={{ width: '24px', height: '24px', color: '#6b7280' }}
+                style={{ width: Math.max(16, screenSize.width * 0.015) + 'px', height: Math.max(16, screenSize.width * 0.015) + 'px', color: '#6b7280' }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -270,7 +430,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
               </svg>
             </div>
             <h3 style={{ 
-              fontSize: '14px', 
+              fontSize: config.fontSize, 
               fontWeight: '500', 
               color: '#1f2937', 
               margin: '0 0 4px 0' 
@@ -278,7 +438,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
               Aucune livraison
             </h3>
             <p style={{ 
-              fontSize: '12px', 
+              fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px', 
               color: '#6b7280',
               margin: 0
             }}>
@@ -288,17 +448,19 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
         )}
       </div>
 
-      {/* Pagination collée en bas - SANS ESPACEMENT */}
+      {/* Pagination responsive */}
       {totalPages > 1 && (
         <div style={{
           borderTop: '1px solid #e2e8f0',
-          padding: '8px 16px',
+          padding: config.padding,
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexShrink: 0,
           backgroundColor: '#fff',
-          margin: 0
+          margin: 0,
+          height: Math.max(40, screenSize.width * 0.025) + 'px',
+          boxSizing: 'border-box'
         }}>
           <button
             onClick={handlePreviousPage}
@@ -306,16 +468,18 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: '6px 12px',
-              borderRadius: '6px',
+              gap: Math.max(2, screenSize.width * 0.003) + 'px',
+              padding: `${Math.max(4, screenSize.width * 0.004)}px ${Math.max(8, screenSize.width * 0.008)}px`,
+              borderRadius: Math.max(4, screenSize.width * 0.004) + 'px',
               border: '1px solid #e2e8f0',
               backgroundColor: currentPage === 0 ? '#f9fafb' : '#fff',
               color: currentPage === 0 ? '#9ca3af' : '#374151',
               cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-              fontSize: '12px',
+              fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px',
               fontWeight: '500',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              height: Math.max(28, screenSize.width * 0.018) + 'px',
+              boxSizing: 'border-box'
             }}
             onMouseEnter={(e) => {
               if (currentPage !== 0) {
@@ -328,14 +492,14 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
               }
             }}
           >
-            <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: Math.max(8, screenSize.width * 0.006) + 'px', height: Math.max(8, screenSize.width * 0.006) + 'px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Préc
           </button>
 
           <div style={{ 
-            fontSize: '12px', 
+            fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px', 
             color: '#374151', 
             fontWeight: '600' 
           }}>
@@ -348,16 +512,18 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: '6px 12px',
-              borderRadius: '6px',
+              gap: Math.max(2, screenSize.width * 0.003) + 'px',
+              padding: `${Math.max(4, screenSize.width * 0.004)}px ${Math.max(8, screenSize.width * 0.008)}px`,
+              borderRadius: Math.max(4, screenSize.width * 0.004) + 'px',
               border: '1px solid #e2e8f0',
               backgroundColor: currentPage === totalPages - 1 ? '#f9fafb' : '#fff',
               color: currentPage === totalPages - 1 ? '#9ca3af' : '#374151',
               cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer',
-              fontSize: '12px',
+              fontSize: Math.max(10, parseInt(config.fontSize) * 0.85) + 'px',
               fontWeight: '500',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              height: Math.max(28, screenSize.width * 0.018) + 'px',
+              boxSizing: 'border-box'
             }}
             onMouseEnter={(e) => {
               if (currentPage !== totalPages - 1) {
@@ -371,7 +537,7 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             }}
           >
             Suiv
-            <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: Math.max(8, screenSize.width * 0.006) + 'px', height: Math.max(8, screenSize.width * 0.006) + 'px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
