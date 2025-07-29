@@ -3,7 +3,7 @@ import DeliveryCard from '../DeliveryCard/DeliveryCard';
 
 const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery, onSelectDelivery, alerts = [] }) => {
   const [currentPage, setCurrentPage] = useState(0);
-  const itemsPerPage = 2; // 2 éléments par page comme demandé dans le screenshot
+  const itemsPerPage = 2; // Exactement 2 éléments par page
 
   // Recherche intelligente améliorée
   const filteredDeliveries = useMemo(() => {
@@ -74,11 +74,32 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
   }, [deliveries, alerts]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" style={{ height: 'calc(100vh - 60px)', maxHeight: 'calc(100vh - 60px)' }}>
-      <div className="p-2 border-b border-border flex-shrink-0">
-        <div className="relative mb-3 ml-8">
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%', 
+      overflow: 'hidden',
+      margin: 0,
+      padding: 0
+    }}>
+      {/* Barre de recherche - sans espacement */}
+      <div style={{ 
+        padding: '12px 16px 8px 16px', 
+        borderBottom: '1px solid #e2e8f0',
+        flexShrink: 0,
+        margin: 0
+      }}>
+        <div style={{ position: 'relative', marginBottom: '12px' }}>
           <svg
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4"
+            style={{
+              position: 'absolute',
+              left: '12px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#6b7280',
+              width: '16px',
+              height: '16px'
+            }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -95,80 +116,117 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             placeholder="Rechercher..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-8 xxs:h-10 xs:h-10 pl-8 xxs:pl-9 xs:pl-10 pr-3 xxs:pr-4 rounded-lg border border-input bg-background text-xs xxs:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-smooth"
+            style={{
+              width: '100%',
+              height: '40px',
+              paddingLeft: '40px',
+              paddingRight: '12px',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              backgroundColor: '#fff',
+              fontSize: '14px',
+              outline: 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = '#3b82f6';
+              e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.2)';
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = '#e2e8f0';
+              e.target.style.boxShadow = 'none';
+            }}
           />
         </div>
 
-        {/* Statistiques optimisées - tailles réduites */}
+        {/* Statistiques compactes */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(60px, 1fr))',
+          gridTemplateColumns: 'repeat(5, 1fr)',
           gap: '4px',
-          marginBottom: '8px'
+          margin: 0
         }}>
           <div style={{
             background: '#10b981',
-            borderRadius: '8px',
+            borderRadius: '6px',
             padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
-            <div style={{ fontSize: '9px', marginTop: '1px' }}>Camions</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.total}</div>
+            <div style={{ fontSize: '8px', marginTop: '1px' }}>Camions</div>
           </div>
           <div style={{
             background: '#3b82f6',
-            borderRadius: '8px',
+            borderRadius: '6px',
             padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
-            <div style={{ fontSize: '9px', marginTop: '1px' }}>En route</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.enRoute}</div>
+            <div style={{ fontSize: '8px', marginTop: '1px' }}>En route</div>
           </div>
           <div style={{
             background: '#8b5cf6',
-            borderRadius: '8px',
+            borderRadius: '6px',
             padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.arrived}</div>
-            <div style={{ fontSize: '9px', marginTop: '1px' }}>Arrivés</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.arrived}</div>
+            <div style={{ fontSize: '8px', marginTop: '1px' }}>Arrivés</div>
           </div>
           <div style={{
             background: '#ef4444',
-            borderRadius: '8px',
+            borderRadius: '6px',
             padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
-            <div style={{ fontSize: '9px', marginTop: '1px' }}>Alertes</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.totalAlerts}</div>
+            <div style={{ fontSize: '8px', marginTop: '1px' }}>Alertes</div>
           </div>
           <div style={{
             background: '#f59e0b',
-            borderRadius: '8px',
+            borderRadius: '6px',
             padding: '6px 4px',
             textAlign: 'center',
             color: 'white'
           }}>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
-            <div style={{ fontSize: '9px', marginTop: '1px' }}>km/h</div>
+            <div style={{ fontSize: '14px', fontWeight: 'bold', lineHeight: '1' }}>{fleetStats.avgSpeed}</div>
+            <div style={{ fontSize: '8px', marginTop: '1px' }}>km/h</div>
           </div>
         </div>
       </div>
 
-      <div className="p-2 border-b border-border flex-shrink-0 flex items-center justify-between">
-        <div className="text-xs text-muted-foreground font-medium">Livraisons</div>
+      {/* En-tête livraisons */}
+      <div style={{ 
+        padding: '8px 16px', 
+        borderBottom: '1px solid #e2e8f0', 
+        flexShrink: 0,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        margin: 0
+      }}>
+        <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>Livraisons</div>
         {filteredDeliveries?.length > 0 && (
-          <div className="text-xs xxs:text-sm text-muted-foreground">
+          <div style={{ fontSize: '12px', color: '#6b7280' }}>
             {startIndex + 1}-{Math.min(endIndex, filteredDeliveries?.length)}/{filteredDeliveries.length}
           </div>
         )}
       </div>
 
-      <div className="flex-1 overflow-hidden px-2 space-y-2" style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
+      {/* Zone d'affichage des cartes - EXACTEMENT 2 cartes */}
+      <div style={{ 
+        flex: 1, 
+        display: 'flex', 
+        flexDirection: 'column',
+        overflow: 'hidden',
+        padding: '12px 16px 0px 16px',
+        gap: '12px',
+        margin: 0
+      }}>
         {currentDeliveries?.length > 0 ? (
           currentDeliveries.map((delivery) => (
             <DeliveryCard
@@ -179,10 +237,26 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
             />
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-32 xxs:h-40 xs:h-48 text-center">
-            <div className="h-8 w-8 xxs:h-12 xxs:w-12 xs:h-16 xs:w-16 bg-muted rounded-full flex items-center justify-center mb-2 xxs:mb-3 xs:mb-4">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '200px',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '12px'
+            }}>
               <svg
-                className="h-4 w-4 xxs:h-6 xxs:w-6 xs:h-8 xs:w-8 text-muted-foreground"
+                style={{ width: '24px', height: '24px', color: '#6b7280' }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -195,49 +269,109 @@ const DeliveryList = ({ deliveries, searchTerm, onSearchChange, selectedDelivery
                 />
               </svg>
             </div>
-            <h3 className="text-xs xxs:text-sm xs:text-base font-medium text-foreground mb-1 xxs:mb-2">
+            <h3 style={{ 
+              fontSize: '14px', 
+              fontWeight: '500', 
+              color: '#1f2937', 
+              margin: '0 0 4px 0' 
+            }}>
               Aucune livraison
             </h3>
-            <p className="text-xs xxs:text-sm text-muted-foreground">
+            <p style={{ 
+              fontSize: '12px', 
+              color: '#6b7280',
+              margin: 0
+            }}>
               {searchTerm ? "Essayez d'autres termes" : 'Aucune livraison en cours'}
             </p>
           </div>
         )}
       </div>
 
-      {/* Contrôles de pagination compacts SANS espace - Format exact screenshot */}
+      {/* Pagination collée en bas - SANS ESPACEMENT */}
       {totalPages > 1 && (
-        <div
-          className="bg-background border-t border-border flex items-center justify-between flex-shrink-0"
-          style={{
-            margin: 0,
-            padding: '6px 12px 0px 12px',
-            minHeight: '36px',
-            borderBottom: 'none'
-          }}
-        >
+        <div style={{
+          borderTop: '1px solid #e2e8f0',
+          padding: '8px 16px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexShrink: 0,
+          backgroundColor: '#fff',
+          margin: 0
+        }}>
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 0}
-            className="flex items-center gap-1 px-3 py-1.5 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0',
+              backgroundColor: currentPage === 0 ? '#f9fafb' : '#fff',
+              color: currentPage === 0 ? '#9ca3af' : '#374151',
+              cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+              fontSize: '12px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== 0) {
+                e.target.style.backgroundColor = '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== 0) {
+                e.target.style.backgroundColor = '#fff';
+              }
+            }}
           >
-            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Préc
           </button>
 
-          <div className="text-sm text-muted-foreground font-semibold">
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#374151', 
+            fontWeight: '600' 
+          }}>
             {currentPage + 1}/{totalPages}
           </div>
 
           <button
             onClick={handleNextPage}
             disabled={currentPage === totalPages - 1}
-            className="flex items-center gap-1 px-3 py-1.5 rounded border border-border bg-background hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-xs font-medium"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              padding: '6px 12px',
+              borderRadius: '6px',
+              border: '1px solid #e2e8f0',
+              backgroundColor: currentPage === totalPages - 1 ? '#f9fafb' : '#fff',
+              color: currentPage === totalPages - 1 ? '#9ca3af' : '#374151',
+              cursor: currentPage === totalPages - 1 ? 'not-allowed' : 'pointer',
+              fontSize: '12px',
+              fontWeight: '500',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              if (currentPage !== totalPages - 1) {
+                e.target.style.backgroundColor = '#f3f4f6';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (currentPage !== totalPages - 1) {
+                e.target.style.backgroundColor = '#fff';
+              }
+            }}
           >
             Suiv
-            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg style={{ width: '12px', height: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
