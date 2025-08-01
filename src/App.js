@@ -523,7 +523,7 @@ const App = () => {
       <div style={{
         position: 'fixed',
         top: '10px',
-        right: '100px',
+        right: '120px',
         zIndex: 3000,
         background: currentRole === 'conducteur' ? '#10b981' :
                    currentRole === 'admin' ? '#3b82f6' : '#8b5cf6',

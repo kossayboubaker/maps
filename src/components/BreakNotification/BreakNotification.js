@@ -7,6 +7,7 @@ const BreakNotification = ({ notification, onClose, onStartBreak, onBreakEnd }) 
   // Détection responsive
   const isMobile = window.innerWidth < 768;
   const isUltraCompact = window.innerWidth < 350;
+  
 
   useEffect(() => {
     if (!isOnBreak) return;
@@ -40,7 +41,7 @@ const BreakNotification = ({ notification, onClose, onStartBreak, onBreakEnd }) 
   return (
     <div style={{
       position: 'fixed',
-      top: isUltraCompact ? '10px' : isMobile ? '20px' : '30px',
+      top: isUltraCompact ? '6px' : isMobile ? '6px' : '10px',
       right: isUltraCompact ? '5px' : isMobile ? '10px' : '20px',
       zIndex: 9999,
       background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
@@ -176,7 +177,7 @@ const BreakNotification = ({ notification, onClose, onStartBreak, onBreakEnd }) 
       {/* Footer */}
       <div style={{
         fontSize: isUltraCompact ? '10px' : '11px',
-        color: '#b45309',
+        color: '#a74d07ff',
         textAlign: 'center',
         lineHeight: '1.3'
       }}>

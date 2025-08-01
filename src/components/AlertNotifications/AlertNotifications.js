@@ -158,62 +158,69 @@ const AlertNotifications = ({
   if (!isOpen) {
     return (
       <button
-        onClick={onToggle}
-        className="alert-notification-button"
-        style={{
-          position: 'fixed',
-          top: '90px',
-          right: '20px',
-          zIndex: 2000,
-          width: '46px',
-          height: '46px',
-          borderRadius: '50%',
-          background: getTotalAlerts() > 0
-            ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-            : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
-          border: '2px solid rgba(255,255,255,0.8)',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: getTotalAlerts() > 0 ?
-            '0 10px 30px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2)' :
-            '0 6px 20px rgba(107, 114, 128, 0.2)',
-          color: 'white',
-          transition: 'all 0.3s ease',
-          animation: getTotalAlerts() > 0 ? 'alertPulse 2.5s ease-in-out infinite' : 'none',
-          backdropFilter: 'blur(8px)'
-        }}
-      >
-        <div style={{ position: 'relative' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          {getTotalAlerts() > 0 && (
-            <div style={{
-              position: 'absolute',
-              top: '-14px',
-              right: '-9px',
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-              color: '#ef4444',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '10px',
-              fontWeight: '900',
-              border: '2px solid #ef4444',
-              boxShadow: '0 3px 12px rgba(239, 68, 68, 0.3)',
-              animation: 'badgePulse 3s ease-in-out infinite'
-            }}>
-              {getTotalAlerts()}
-            </div>
-          )}
-        </div>
-      </button>
+  onClick={onToggle}
+  className="alert-notification-button"
+  style={{
+    position: 'fixed',
+    top: '30px',
+    right: '80px', // Position fixe inchangée pour mobile et desktop
+    zIndex: 2000,
+    width: window.innerWidth < 768 ? '35px' : '46px', // Taille réduite seulement en mobile
+    height: window.innerWidth < 768 ? '35px' : '46px', // Taille réduite seulement en mobile
+    borderRadius: '50%',
+    background: getTotalAlerts() > 0
+      ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
+      : 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+    border: '2px solid rgba(255,255,255,0.8)',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: getTotalAlerts() > 0 ?
+      '0 10px 30px rgba(239, 68, 68, 0.3), 0 0 15px rgba(239, 68, 68, 0.2)' :
+      '0 6px 20px rgba(107, 114, 128, 0.2)',
+    color: 'white',
+    transition: 'all 0.3s ease',
+    animation: getTotalAlerts() > 0 ? 'alertPulse 2.5s ease-in-out infinite' : 'none',
+    backdropFilter: 'blur(8px)'
+  }}
+>
+  <div style={{ position: 'relative' }}>
+    <svg 
+      width={window.innerWidth < 768 ? '16px' : '20px'} // Icône réduite en mobile
+      height={window.innerWidth < 768 ? '16px' : '20px'} // Icône réduite en mobile
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2"
+    >
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    {getTotalAlerts() > 0 && (
+      <div style={{
+        position: 'absolute',
+        top: window.innerWidth < 768 ? '-8px' : '-14px', // Ajusté pour mobile
+        right: window.innerWidth < 768 ? '-6px' : '-9px', // Ajusté pour mobile
+        background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+        color: '#ef4444',
+        borderRadius: '50%',
+        width: window.innerWidth < 768 ? '18px' : '24px', // Badge réduit en mobile
+        height: window.innerWidth < 768 ? '18px' : '24px', // Badge réduit en mobile
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '10px',
+        fontWeight: '900',
+        border: '2px solid #ef4444',
+        boxShadow: '0 3px 12px rgba(239, 68, 68, 0.3)',
+        animation: 'badgePulse 3s ease-in-out infinite'
+      }}>
+        {getTotalAlerts()}
+      </div>
+    )}
+  </div>
+</button>
     );
   }
 

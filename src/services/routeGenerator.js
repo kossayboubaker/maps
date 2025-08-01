@@ -174,7 +174,8 @@ class RouteGenerator {
     [36.784912, 10.190801],
     [36.785403, 10.190556]
     // ... (vous pouvez ajouter plus de points si nécessaire)
-]
+],
+    breakPoints: [2, 4] // Points de pause
   },
   'TN-002': {
    startPoint: [36.860392, 10.110538], // Départ Ariana
@@ -219,7 +220,9 @@ class RouteGenerator {
         [36.856935, 10.116056],
         [36.856967, 10.116187],
         [36.856999, 10.116343]
-    ]
+    ],
+    breakPoints: [3, 4],  // Points de pause rapprochés (anciennement [3, 20, 30])
+    breakPoints: [2, 4, 8]  // Ajoute une pause à [36.770286, 10.231558]
 },
   'TN-003': {
     // Ariana vers Kairouan (Route intérieure)
@@ -542,11 +545,13 @@ class RouteGenerator {
 [36.46777,10.728112],
 [36.467772,10.727675],
  [36.467824,10.727293],
+ 
  [36.467911,10.726832],
 [36.467999,10.726466],
  [36.468121,10.726088],
 
-    ]
+    ],
+    breakPoints: [3, 6] // Nouveaux points de pause (décalage de -4 pour le premier)
   },
   'TN-004': {
     // La Goulette vers Nabeul (Route côtière touristique)
@@ -581,7 +586,7 @@ class RouteGenerator {
       [36.8045, 10.3534], // Béni Khiar
       [36.4561, 10.7376]  // Nabeul centre
     ],
-    breakPoints: [8, 16] // Points de pause
+    // breakPoints: [3, 16] // Points de pause
   },
   'TN-005': {
     // Sfax vers Gabès (Route GP1 du Sud)
@@ -619,7 +624,7 @@ class RouteGenerator {
       [34.5656, 10.4112],
       [33.8869, 10.0982]  // Gabès centre
     ],
-    breakPoints: [8, 17] // Points de pause
+    // breakPoints: [2, 17] // Points de pause
   }
 };
   }
@@ -881,7 +886,7 @@ class RouteGenerator {
         type: 'break_point',
         icon: '��',
         popup: `<div style="text-align: center; font-family: sans-serif;">
-          <strong>🚦 Point de Pause ${idx + 1}</strong><br>
+          <strong>🚦 Point de Pause ${idx}</strong><br>
           <span style="font-size: 12px; color: #f59e0b;">Durée: 45 minutes</span><br>
           <span style="font-size: 10px; color: #6b7280;">Obligatoire pour sécurité</span>
         </div>`
