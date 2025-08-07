@@ -395,7 +395,7 @@ const App = () => {
     // Focus sur le camion sélectionné dans la carte avec zoom approprié
     if (mapInstance && delivery && delivery.position) {
       mapInstance.flyTo(delivery.position, Math.max(mapInstance.getZoom(), 14), {
-        animate: true,
+        animate: false,
         duration: 1.8
       });
 
@@ -442,7 +442,7 @@ const App = () => {
     if (mapInstance && alert.position) {
       // Zoomer et centrer sur l'alerte avec animation fluide
       mapInstance.flyTo(alert.position, 15, {
-        animate: true,
+        animate: false,
         duration: 1.5
       });
 
